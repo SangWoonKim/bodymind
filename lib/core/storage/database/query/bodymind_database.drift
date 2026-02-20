@@ -1,0 +1,222 @@
+create table tb_onboard_status (
+    onboard_sn integer primary key,
+    onboard_yn text not null
+);
+
+create table tb_user_info (
+    nick_name text not null,
+    age int not null,
+    height real not null,
+    weight real not null,
+    gender text not null
+);
+
+create table tb_daily_hr_proxy_info (
+    isrt_dt text primary key,
+    rest_base real,
+    var_base real,
+    high_base real
+);
+
+create table tb_feature_act_info(
+    isrt_dt text primary key,
+    step_count integer not null,
+    distance real not null,
+    calorie real not null
+);
+
+create table tb_feature_hr_info(
+    isrt_dt text primary key,
+    hr_lst text not null
+);
+
+create table tb_feature_sleep_info(
+   slp_sn INTEGER PRIMARY KEY AUTOINCREMENT,
+   base_date TEXT NOT NULL UNIQUE,         -- 'YYYY-MM-DD' (기상일 기준 추천)
+   start_at  TEXT,                         -- 수면 시작(ISO)
+   end_at    TEXT,                         -- 수면 종료(ISO)
+   total_inbed_m INTEGER NOT NULL,
+   total_slp_m   INTEGER NOT NULL,
+   total_awake_m INTEGER NOT NULL,
+   total_light_m INTEGER NOT NULL,
+   total_deep_m  INTEGER NOT NULL,
+   total_rem_m   INTEGER NOT NULL
+);
+
+CREATE TABLE tb_feature_sleep_detail (
+  slp_detail_sn INTEGER PRIMARY KEY AUTOINCREMENT,
+  slp_sn INTEGER NOT NULL,
+
+  stage TEXT NOT NULL,        -- 'AWAKE','LIGHT','DEEP','REM'
+  start_at TEXT NOT NULL,     -- 구간 시작(ISO)
+  end_at   TEXT NOT NULL,     -- 구간 끝(ISO)
+  duration_m INTEGER NOT NULL, -- (end-start) 분
+
+  FOREIGN KEY (slp_sn) REFERENCES tb_feature_sleep_info(slp_sn)
+    ON DELETE CASCADE
+);
+
+CREATE TABLE tb_feature_exercise_info (
+  ex_sn       INTEGER PRIMARY KEY AUTOINCREMENT,
+  base_date   TEXT NOT NULL,      -- 'YYYYMMDD' 예: 20260201
+  type        integer NOT NULL,      -- 'run', 'walk', 'swim', 'paddle' 등
+  metric_kind TEXT NOT NULL,      -- 'step' | 'stroke' | 'paddle'
+  metric_val  REAL NOT NULL,      -- 걸음수/스트로크/패들 횟수 등(공용 변수)
+  distance    REAL NOT NULL,
+  calorie     REAL NOT NULL,
+  start_hhmm  TEXT NOT NULL,      -- 'HHmm'
+  end_hhmm    TEXT NOT NULL       -- 'HHmm'
+);
+
+CREATE TABLE tb_feature_exercise_hr (
+  ex_sn INTEGER NOT NULL PRIMARY KEY,
+  hr_lst TEXT NOT NULL,      -- CSV: "90,91,100,120"
+  step_sec INTEGER NOT NULL,
+  FOREIGN KEY (ex_sn) REFERENCES tb_feature_exercise_info(ex_sn) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_ex_base_date ON tb_feature_exercise_info(base_date);
+CREATE INDEX idx_ex_hr_ex_sn ON tb_feature_exercise_hr(ex_sn);
+
+CREATE UNIQUE INDEX ux_sleep_detail
+ON tb_feature_sleep_detail (slp_sn, stage, start_at, end_at);
+
+-- onboarding
+selectOnboardStatus:
+select onboard_yn from tb_onboard_status;
+
+insertOnboardStatus:
+insert or replace into tb_onboard_status (onboard_sn, onboard_yn) values (:onboard_sn, :onboard_yn);
+
+deleteOnboardStatus:
+delete from tb_onboard_status;
+
+
+-- user
+selectUserInfo:
+select * from tb_user_info;
+
+insertUserInfo:
+insert or replace into tb_user_info(nick_name, age, height, weight, gender) values (:nick_name, :age, :height, :weight, :gender);
+
+deleteUserInfo:
+delete from tb_user_info;
+
+
+-- Heart
+insertHrProxy:
+insert or replace into tb_daily_hr_proxy_info(isrt_dt, rest_base, var_base, high_base) values (:isrt_dt, :rest_base, :var_base, :high_base);
+
+insertFeatureHrInfo:
+insert or replace into tb_feature_hr_info(isrt_dt, hr_lst) values (:isrt_dt, :hr_lst);
+
+selectFeatureHr:
+select isrt_dt, hr_lst
+from tb_feature_hr_info
+where isrt_dt between strftime('%Y%m%d', 'now', 'localtime', :previous_day)
+and strftime('%Y%m%d', 'now', 'localtime');
+
+selectHrDtlForDate:
+select isrt_dt, hr_lst
+from tb_feature_hr_info
+where isrt_dt = :slct_dt;
+
+-- Act
+insertFeatureActInfo:
+insert or replace into tb_feature_act_info(isrt_dt, step_count, distance, calorie) values (:isrt_dt, :step_count, :distance, :calorie);
+
+selectFeatureAct:
+select  isrt_dt, step_count, distance, calorie
+from tb_feature_act_info
+where isrt_dt between strftime('%Y%m%d', 'now', 'localtime', '-6 day')
+and strftime('%Y%m%d', 'now', 'localtime');
+
+-- Exercise
+selectFeatureExercise:
+SELECT
+  i.base_date,
+  i.ex_sn, i.type,
+  i.metric_kind, i.metric_val,
+  i.distance, i.calorie,
+  i.start_hhmm, i.end_hhmm,
+  h.hr_idx, h.hr, h.step_sec
+FROM tb_feature_exercise_info i
+JOIN tb_feature_exercise_hr h ON h.ex_sn = i.ex_sn
+WHERE i.base_date BETWEEN strftime('%Y%m%d', 'now', 'localtime', '-6 day')
+                     AND strftime('%Y%m%d', 'now', 'localtime')
+ORDER BY i.base_date, i.start_hhmm, h.hr_idx;
+
+insertExerciseInfo:
+    INSERT INTO tb_feature_exercise_info (
+      base_date, type, metric_kind, metric_val,
+      distance, calorie, start_hhmm, end_hhmm
+    ) VALUES (
+      :base_date, :type, :metric_kind, :metric_val,
+      :distance, :calorie, :start_hhmm, :end_hhmm
+    );
+
+INSERT INTO tb_feature_exercise_hr(ex_sn, hr_lst, step_sec)
+VALUES (:exSn, :hrLst, :stepSec)
+ON CONFLICT(ex_sn) DO UPDATE SET
+  hr_lst = excluded.hr_lst,
+  step_sec = excluded.step_sec;
+
+
+-- Sleep
+insertFeatureSleepInfo:
+INSERT INTO tb_feature_sleep_info (
+  base_date, start_at, end_at,
+  total_inbed_m, total_slp_m, total_awake_m, total_light_m, total_deep_m, total_rem_m
+) VALUES (:total_inbed_m, :total_slp_m, :total_awake_m, :total_light_m, :total_deep_m, :total_rem_m)
+ON CONFLICT(base_date) DO UPDATE SET
+  start_at = excluded.start_at,
+  end_at = excluded.end_at,
+  total_inbed_m = excluded.total_inbed_m,
+  total_slp_m = excluded.total_slp_m,
+  total_awake_m = excluded.total_awake_m,
+  total_light_m = excluded.total_light_m,
+  total_deep_m = excluded.total_deep_m,
+  total_rem_m = excluded.total_rem_m;
+
+insertFeatureSleepDetail:
+INSERT INTO tb_feature_sleep_detail(
+  slp_sn, stage, start_at, end_at, duration_m
+) VALUES (
+  :slpSn, :stage, :startAt, :endAt, :durationM
+)
+ON CONFLICT(slp_sn, stage, start_at, end_at) DO UPDATE SET
+  duration_m = excluded.duration_m;
+
+selectFeatureSleepSegmentaion:
+SELECT
+  i.base_date,
+  i.start_at, i.end_at,
+  d.stage,
+  d.start_at AS seg_start,
+  d.end_at   AS seg_end,
+  d.duration_m
+FROM tb_feature_sleep_info i
+JOIN tb_feature_sleep_detail d ON d.slp_sn = i.slp_sn
+WHERE i.base_date BETWEEN strftime('%Y%m%d', 'now', 'localtime', '-6 day')
+                     AND strftime('%Y%m%d', 'now', 'localtime')
+ORDER BY i.base_date, d.start_at;
+
+selectFeatureSleepInfo:
+SELECT
+  i.base_date,
+  -- 전체(분)
+  SUM(d.duration_m) AS total_m,
+  -- stage별(분) (stage 값은 너 테이블에 맞게 수정)
+  SUM(CASE WHEN d.stage = 'AWAKE' THEN d.duration_m ELSE 0 END) AS awake_m,
+  SUM(CASE WHEN d.stage = 'LIGHT' THEN d.duration_m ELSE 0 END) AS light_m,
+  SUM(CASE WHEN d.stage = 'REM'   THEN d.duration_m ELSE 0 END) AS rem_m,
+  SUM(CASE WHEN d.stage = 'DEEP'  THEN d.duration_m ELSE 0 END) AS deep_m,
+  -- 구간 개수(세그먼트 수)
+  COUNT(*) AS segment_cnt
+FROM tb_feature_sleep_info i
+JOIN tb_feature_sleep_detail d ON d.slp_sn = i.slp_sn
+WHERE i.base_date BETWEEN strftime('%Y%m%d', 'now', 'localtime', '-6 day')
+                     AND strftime('%Y%m%d', 'now', 'localtime')
+GROUP BY i.base_date
+ORDER BY i.base_date;
+
