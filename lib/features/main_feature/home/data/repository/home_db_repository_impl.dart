@@ -48,7 +48,7 @@ class HomeDbRepositoryImpl extends HomeDbRepository{
       double dtlTotCal = 0;
       int dtlTotDuration = 0;
       groupedExSn.keys.forEach((e) {
-        List<String>? hrLst = groupedExSn[e]?.asMap().values.map((dtl) => dtl.hr.toString()).toList();
+        List<String>? hrLst = groupedExSn[e]?.asMap().values.map((dtl) => dtl.hrLst.toString()).toList();
         if(hrLst != null){
           SelectFeatureExerciseResult dtlInfo = groupedExSn[e]!.first;
 
@@ -82,7 +82,7 @@ class HomeDbRepositoryImpl extends HomeDbRepository{
             (e) => e.isrtDt != null
     ).map(
             (e) {
-              List<int> hrLst = e.hrLst.split(',').map((e) => int.parse(e)).toList();
+              List<int> hrLst =  List<int>.from(jsonDecode(e.hrLst) as List);
               String? strtDt = hrLst.asMap().entries.skip(1).where((e) => hrLst[e.key -1] == 0 && e.value != 0)
                   .map(
                       (e){
@@ -91,7 +91,7 @@ class HomeDbRepositoryImpl extends HomeDbRepository{
                         return '${hh.toString().padLeft(2, '0')}${mm.toString().padLeft(2, '0')}';
                       }
                       ).firstOrNull;
-              return FeatureModel(e.isrtDt!, FeatureHr(strtDt ?? '000000','235959',hrLst));
+              return FeatureModel(e.isrtDt!, FeatureHr(strtDt ?? '000000','235959',[],hrLst));
             }
         ).toList();
     
@@ -126,76 +126,7 @@ class HomeDbRepositoryImpl extends HomeDbRepository{
     return retunedData.isEmpty ? null : retunedData;
   }
 
-  @override
-  Future<void> savedActData(String isrtDt, int stepCount, double distance, double calorie) async{
-    await db.insertFeatureActInfo(isrtDt, stepCount, distance, calorie);
-  }
 
-  @override
-  Future<void> savedExerciseData(List<FeatureModel> exModels) async {
-    await Future.forEach(exModels, (FeatureModel ex) async {
-      final data = ex.feature as FeatureExercise;
-      await _insertAsyncEx(ex.instDt, data.featureData);
-    });
-  }
-
-  @override
-  Future<void> savedHeartData(String isrtDt, List<int> hrLst, double restBase, double varBase, double highBase) async{
-    StringBuffer hrStrBuff = StringBuffer();
-    String hrStr = '';
-    for(int hr in hrLst){
-      hrStrBuff.write('$hr,');
-    }
-
-    hrStr = hrStrBuff.toString();
-
-    if (hrStr.endsWith(',')) {
-      hrStrBuff
-        ..clear()
-        ..write(hrStr.substring(0, hrStr.length - 1));
-    }
-
-    await db.insertFeatureHrInfo(isrtDt, hrStr);
-    await db.insertHrProxy(isrtDt, restBase, varBase, highBase);
-
-  }
-
-  @override
-  Future<void> savedSleepData(List<FeatureModel> slpModels) async{
-    await Future.forEach(slpModels, (FeatureModel info) async{
-      final data = info.feature as FeatureSleep;
-      await db.insertFeatureSleep(
-          baseDate: info.instDt,
-          totalInbedM: data.totalInbedM,
-          totalSlpM: data.totalSlpM,
-          totalAwakeM: data.totalAwakeM,
-          totalLightM: data.totalLightM,
-          totalDeepM: data.totalDeepM,
-          totalRemM: data.totalRemM,
-          segments: data.detail);
-    });
-
-  }
-
-  Future<void> _insertAsyncEx(String instDt, List<FeatureExerciseDtl?> exDtls) async{
-    return await Future.forEach(exDtls, (FeatureExerciseDtl? dtl) async{
-      if(dtl != null){
-        final info = TbFeatureExerciseInfoCompanion.insert(
-            baseDate: instDt,
-            type: dtl.exerciseType.value ,
-            metricKind: dtl.metricKind,
-            metricVal: dtl.metricVal.toDouble(),
-            distance: dtl.distance,
-            calorie: dtl.calorie,
-            startHhmm: dtl.strtDt,
-            endHhmm: dtl.endDt);
-        final hrList = TbFeatureExerciseHrCompanion.insert(exSn:Value(0), hrLst: jsonEncode(dtl.hrLst), stepSec: 5);
-
-        return db.insertFeatureExercise(info: info, hrList: hrList);
-      }
-    });
-
-  }
 }
 
 

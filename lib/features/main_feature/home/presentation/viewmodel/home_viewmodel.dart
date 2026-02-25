@@ -116,13 +116,18 @@ class HomeViewModel extends Notifier<HomeViewState> {
   HomeViewState build() {
     _homeUsecase = ref.read(homeUseCaseProvider);
     _userUseCase = ref.read(userUseCaseProvider);
+
+    ref.listen(healthSyncDoneProvider, (prev, next) {
+      next.whenData((_) => loadFeaturedData(7));
+    });
+    //요기 오버헤드 줄일 방법 생각하자
     Future.microtask(()=> loadFeaturedData(7));
     return HomeViewState.initial();
   }
 
   void loadFeaturedData(int previousDays) async{
     _userInfo ??= await _userUseCase.getUserInfo();
-    await _homeUsecase.requestPermission();
+    // await _homeUsecase.requestPermission();
 
     DateTime now = DateTime.now();
     DateTime previousDay = now.add(Duration(days: -1));

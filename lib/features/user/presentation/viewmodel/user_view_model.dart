@@ -107,7 +107,7 @@ class UserViewModel extends Notifier<UserViewState>{
         )
     );
 
-    context.goNamed('home');
+    context.pushReplacementNamed('home');
   }
 
 }

@@ -28,16 +28,19 @@ class HeartDtlState{
 
 class HeartDtlViewModel extends Notifier<HeartDtlState>{
   late final HeartDtlUsecase _hrUsecase;
-  
+  late DateTime _initializedDay;
+
   @override
   HeartDtlState build() {
     _hrUsecase = ref.read(hrDtlRepoUsecase);
+    _initializedDay = DateTime.now();
     Future.microtask(() => loadHrData(null));
     return HeartDtlState.initial();
   }
 
   Future<void> loadHrData(int? moveDay) async{
-    String yyyyMMdd = TimeUtil.dateTimeToyymmdd(DateTime.now().add(Duration(days: moveDay ?? 0)));
+    _initializedDay = _initializedDay.add(Duration(days: moveDay ?? 0));
+    String yyyyMMdd = TimeUtil.dateTimeToyymmdd(_initializedDay);
     final rec = await _hrUsecase.loadDbHrData(yyyyMMdd);
     if(rec == null) {
       state = HeartDtlState(yyyyMMdd,[],0,0,0,0,false);

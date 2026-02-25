@@ -12,7 +12,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget{
   @override
   Widget build(BuildContext context) {
    return AppBar(
-     title: title != null ? Text(title!, style: GlobalTheme.customText,) : null,
+     title: title != null ? Text(title!, style: GlobalTheme.customText.copyWith(color: Colors.black),) : null,
      leading: leading,
      actions: actions,
      backgroundColor: backgroundColor,

@@ -53,7 +53,7 @@ final routeProvider = Provider<GoRouter>((ref){
           path: '/feature/heart',
           name: 'featureHeart',
           builder: (context, state) {
-            return const HealthDtlHeartView(); // ymd 없이
+            return HealthDtlHeartView(); // ymd 없이
           },
         ),
         //bottomNavigationView 하위 위젯 정의

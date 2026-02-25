@@ -7,8 +7,5 @@ abstract class HomeDbRepository {
   Future<List<FeatureModel>?> loadSavedHeartData(int previousDays);
   Future<List<FeatureModel>?> loadSavedExerciseData(int previousDays);
   Future<List<FeatureModel>?> loadSavedSleepData(int previousDays);
-  Future<void> savedActData(String isrtDt, int stepCount, double distance, double calorie);
-  Future<void> savedHeartData(String isrtDt, List<int> hrLst, double restBase, double varBase, double highBase);
-  Future<void> savedExerciseData(List<FeatureModel> exModels);
-  Future<void> savedSleepData(List<FeatureModel> slpModels);
+
 }

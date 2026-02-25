@@ -119,7 +119,7 @@ and strftime('%Y%m%d', 'now', 'localtime');
 selectHrDtlForDate:
 select isrt_dt, hr_lst
 from tb_feature_hr_info
-where isrt_dt = :slct_dt;
+where isrt_dt like (:slct_dt || '%');
 
 -- Act
 insertFeatureActInfo:
@@ -139,12 +139,12 @@ SELECT
   i.metric_kind, i.metric_val,
   i.distance, i.calorie,
   i.start_hhmm, i.end_hhmm,
-  h.hr_idx, h.hr, h.step_sec
+  h.hr_lst, h.step_sec
 FROM tb_feature_exercise_info i
 JOIN tb_feature_exercise_hr h ON h.ex_sn = i.ex_sn
 WHERE i.base_date BETWEEN strftime('%Y%m%d', 'now', 'localtime', '-6 day')
                      AND strftime('%Y%m%d', 'now', 'localtime')
-ORDER BY i.base_date, i.start_hhmm, h.hr_idx;
+ORDER BY i.base_date, i.start_hhmm;
 
 insertExerciseInfo:
     INSERT INTO tb_feature_exercise_info (

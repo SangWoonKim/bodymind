@@ -157,7 +157,7 @@ class HomeHeartInjector {
 
       if(hrModel != null){
         String day = featuredData.featureData!.instDt.substring(6,8);
-        final dayStart = TimeUtil.yyyyMMddToDateTime(hrModel.strtDt);
+        final dayStart = TimeUtil.yyyyMMddToDateTime(featuredData.featureData!.instDt);
         // final hrSample = heartInjector.convertHrSample(hrModel.hrData);
 
         final hrScore = _savedDataProcessingHeart(

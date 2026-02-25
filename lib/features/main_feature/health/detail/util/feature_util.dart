@@ -4,28 +4,29 @@ import 'package:bodymind/core/util/bodymind_core_util.dart';
 
 extension Avg on Iterable<num?>{
   double featureAvg() {
-    final filtered = whereType<num>(); // null 제거 + 타입 안전
-    final list = filtered.toList();
-    if (list.isEmpty) return 0;
+    final list = whereType<num>().toList();
+    final positives = list.where((e) => e > 0).toList();
+    if (positives.isEmpty) return 0;
 
-    final sum = list.fold<num>(0, (x, y) => x + y);
-    return sum.toDouble() / list.length;
+    return positives.reduce((x,y) => x+y) / positives.length;
   }
 
   double featureMin() {
     final list = whereType<num>().toList();
-    if (list.isEmpty) return 0;
+    final positives = list.where((e) => e > 0).toList();
 
-    final m = list.skip(1).fold<num>(list.first, (x, y) => min(x, y));
+    if (positives.isEmpty) return 0;
+
+    final m = positives.reduce(min);
     return m.toDouble();
   }
 
   double featureMax() {
     final list = whereType<num>().toList();
-    if (list.isEmpty) return 0;
+    final positives = list.where((e) => e > 0).toList();
+    if (positives.isEmpty) return 0;
 
-    final m = list.skip(1).fold<num>(list.first, (x, y) => max(x, y));
-    return m.toDouble();
+    return positives.reduce(max).toDouble();
   }
 }
 
@@ -43,7 +44,7 @@ class HrInsertUtil{
     for (int i = 0; i < hrLst.length; i++) {
       final idx = offset + i;
       if (idx < 0 || idx >= 1440) continue;
-      daySeries[idx] = hrLst[i]; // hrLst가 0이면 결측으로 유지
+      daySeries[idx] = hrLst[i];
     }
 
     return daySeries;

@@ -17,9 +17,9 @@ class HeartDtlUsecase {
     final hrLst = hrData.hrData;
 
     return HeartDtlDto(
-        hrLst.featureAvg().toInt(),
-        hrLst.featureMin().toInt(),
         hrLst.featureMax().toInt(),
+        hrLst.featureMin().toInt(),
+        hrLst.featureAvg().toInt(),
         hrLst,
         hrModels.instDt);
   }

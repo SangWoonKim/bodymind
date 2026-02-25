@@ -3441,9 +3441,9 @@ abstract class _$BodymindDatabase extends GeneratedDatabase {
     ).asyncMap(tbFeatureHrInfo.mapFromRow);
   }
 
-  Selectable<TbFeatureHrInfoData> selectHrDtlForDate(String? slctDt) {
+  Selectable<TbFeatureHrInfoData> selectHrDtlForDate(String slctDt) {
     return customSelect(
-      'SELECT isrt_dt, hr_lst FROM tb_feature_hr_info WHERE isrt_dt = ?1',
+      'SELECT isrt_dt, hr_lst FROM tb_feature_hr_info WHERE isrt_dt LIKE(?1 || \'%\')',
       variables: [Variable<String>(slctDt)],
       readsFrom: {tbFeatureHrInfo},
     ).asyncMap(tbFeatureHrInfo.mapFromRow);
@@ -3477,7 +3477,7 @@ abstract class _$BodymindDatabase extends GeneratedDatabase {
 
   Selectable<SelectFeatureExerciseResult> selectFeatureExercise() {
     return customSelect(
-      'SELECT i.base_date, i.ex_sn, i.type, i.metric_kind, i.metric_val, i.distance, i.calorie, i.start_hhmm, i.end_hhmm, h.hr_idx, h.hr, h.step_sec FROM tb_feature_exercise_info AS i JOIN tb_feature_exercise_hr AS h ON h.ex_sn = i.ex_sn WHERE i.base_date BETWEEN strftime(\'%Y%m%d\', \'now\', \'localtime\', \'-6 day\') AND strftime(\'%Y%m%d\', \'now\', \'localtime\') ORDER BY i.base_date, i.start_hhmm, h.hr_idx',
+      'SELECT i.base_date, i.ex_sn, i.type, i.metric_kind, i.metric_val, i.distance, i.calorie, i.start_hhmm, i.end_hhmm, h.hr_lst, h.step_sec FROM tb_feature_exercise_info AS i JOIN tb_feature_exercise_hr AS h ON h.ex_sn = i.ex_sn WHERE i.base_date BETWEEN strftime(\'%Y%m%d\', \'now\', \'localtime\', \'-6 day\') AND strftime(\'%Y%m%d\', \'now\', \'localtime\') ORDER BY i.base_date, i.start_hhmm',
       variables: [],
       readsFrom: {tbFeatureExerciseInfo, tbFeatureExerciseHr},
     ).map(
@@ -3491,8 +3491,7 @@ abstract class _$BodymindDatabase extends GeneratedDatabase {
         calorie: row.read<double>('calorie'),
         startHhmm: row.read<String>('start_hhmm'),
         endHhmm: row.read<String>('end_hhmm'),
-        hrIdx: row.readNullable<String>('hr_idx'),
-        hr: row.readNullable<String>('hr'),
+        hrLst: row.read<String>('hr_lst'),
         stepSec: row.read<int>('step_sec'),
       ),
     );
@@ -3543,6 +3542,26 @@ abstract class _$BodymindDatabase extends GeneratedDatabase {
         Variable<int>(totalRemM),
       ],
       updates: {tbFeatureSleepInfo},
+    );
+  }
+
+  Future<int> insertFeatureSleepDetail(
+    int slpSn,
+    String stage,
+    String startAt,
+    String endAt,
+    int durationM,
+  ) {
+    return customInsert(
+      'INSERT INTO tb_feature_sleep_detail (slp_sn, stage, start_at, end_at, duration_m) VALUES (?1, ?2, ?3, ?4, ?5) ON CONFLICT (slp_sn, stage, start_at, end_at) DO UPDATE SET duration_m = excluded.duration_m',
+      variables: [
+        Variable<int>(slpSn),
+        Variable<String>(stage),
+        Variable<String>(startAt),
+        Variable<String>(endAt),
+        Variable<int>(durationM),
+      ],
+      updates: {tbFeatureSleepDetail},
     );
   }
 
@@ -5510,8 +5529,7 @@ class SelectFeatureExerciseResult {
   final double calorie;
   final String startHhmm;
   final String endHhmm;
-  final String? hrIdx;
-  final String? hr;
+  final String hrLst;
   final int stepSec;
   SelectFeatureExerciseResult({
     required this.baseDate,
@@ -5523,8 +5541,7 @@ class SelectFeatureExerciseResult {
     required this.calorie,
     required this.startHhmm,
     required this.endHhmm,
-    this.hrIdx,
-    this.hr,
+    required this.hrLst,
     required this.stepSec,
   });
 }

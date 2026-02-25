@@ -1,7 +1,7 @@
 enum HealthDtlHeartSummary {
-  avg('평균', 'heart_avg.svg'),
-  high('최고', 'heart_avg.svg'),
-  low('최저', 'heart_avg.svg');
+  avg('평균', 'assets/images/icon/heart_avg.svg'),
+  high('최고', 'assets/images/icon/heart_max.svg'),
+  low('최저', 'assets/images/icon/heart_low.svg');
 
   final String name;
   final String assetPath;

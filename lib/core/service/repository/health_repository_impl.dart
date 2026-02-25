@@ -1,14 +1,3 @@
-import 'package:bodymind/core/health_module/health_service.dart';
-import 'package:bodymind/core/storage/database/query/bodymind_database.dart';
-import 'package:bodymind/core/storage/feature_model/feature_data/act/feature_act.dart';
-import 'package:bodymind/core/storage/feature_model/feature_data/exercise/detail/feature_exercise_dtl.dart';
-import 'package:bodymind/core/storage/feature_model/feature_data/exercise/feature_exercise.dart';
-import 'package:bodymind/core/storage/feature_model/feature_data/hr/feature_hr.dart';
-import 'package:bodymind/core/storage/feature_model/feature_data/sleep/detail/feature_sleep_dtl.dart';
-import 'package:bodymind/core/storage/feature_model/feature_data/sleep/feature_sleep.dart';
-import 'package:bodymind/core/storage/feature_model/feature_model.dart';
-import 'package:bodymind/core/util/bodymind_core_util.dart';
-import 'package:bodymind/features/main_feature/home/domain/repository/home_repository.dart';
 import 'package:common_mutiple_health/entity/const/data_catalog.dart';
 import 'package:common_mutiple_health/entity/const/permission_option.dart';
 import 'package:common_mutiple_health/entity/model/base/base_dynamic_model.dart';
@@ -17,13 +6,23 @@ import 'package:common_mutiple_health/entity/model/element/act_model.dart';
 import 'package:common_mutiple_health/entity/model/element/exercise_model.dart';
 import 'package:common_mutiple_health/entity/model/element/heartrate_model.dart';
 import 'package:common_mutiple_health/entity/model/element/sleep_model.dart';
+
+import '../../health_module/health_service.dart';
+import '../../storage/feature_model/feature_data/act/feature_act.dart';
+import '../../storage/feature_model/feature_data/exercise/detail/feature_exercise_dtl.dart';
+import '../../storage/feature_model/feature_data/exercise/feature_exercise.dart';
+import '../../storage/feature_model/feature_data/hr/feature_hr.dart';
+import '../../storage/feature_model/feature_data/sleep/detail/feature_sleep_dtl.dart';
+import '../../storage/feature_model/feature_data/sleep/feature_sleep.dart';
+import '../../storage/feature_model/feature_model.dart';
+import '../../util/bodymind_core_util.dart';
+import 'health_repository.dart';
 import 'package:collection/collection.dart';
 
-class HomeRepositoryImpl extends HomeRepository{
+class HealthRepositoryImpl extends HealthRepository{
   final HealthService healthService;
-  final BodymindDatabase db;
 
-  HomeRepositoryImpl(this.healthService, this.db);
+  HealthRepositoryImpl(this.healthService);
 
 
   //healthService
@@ -106,6 +105,7 @@ class HomeRepositoryImpl extends HomeRepository{
             FeatureHr(
                 TimeUtil.dateTimeToFullDt(DateTime.fromMillisecondsSinceEpoch(e.baseStartTime!)),
                 TimeUtil.dateTimeToFullDt(DateTime.fromMillisecondsSinceEpoch(e.baseEndTime!)),
+                hrDtl?.originData.map((e) => FeatureHrDtl(DateTime.fromMillisecondsSinceEpoch(e.measureTime), e.heartRate)).toList() ?? [],
                 hrDtl!.optimizedData??[]
             )
         );
@@ -123,12 +123,12 @@ class HomeRepositoryImpl extends HomeRepository{
 
     if(data.data != null){
       final sleepModel = data.data!.where((e) => e.data != null).toList();
-
-      final returndData =  sleepModel.map((e){
+      List<FeatureModel> returnData = List.empty(growable: true);
+      sleepModel.map((e){
         final sleepInfo = e.data as SleepModel?;
 
         if(sleepInfo != null){
-          return FeatureModel(
+          returnData.add(FeatureModel(
             TimeUtil.dateTimeToyymmdd(DateTime.fromMillisecondsSinceEpoch(e.baseEndTime!)),
             FeatureSleep(
                 TimeUtil.dateTimeToFullDt(DateTime.fromMillisecondsSinceEpoch(sleepInfo.detailData.first.sleepStartTime)) ,
@@ -146,9 +146,11 @@ class HomeRepositoryImpl extends HomeRepository{
                 sleepInfo.totalRemDuration,
                 sleepInfo.totalDeepDuration
             ),
-          );
+          )) ;
         }
-      }).toList();
+      });
+
+      return returnData.isEmpty ? null : returnData;
     }
 
   }
