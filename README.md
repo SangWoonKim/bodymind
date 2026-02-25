@@ -13,17 +13,17 @@ name role - class(folder + feature + role)
 
 folder structure 
 feature
-  dtl/feature
-    data
-      model
-      repository
-    domain
-      entity
-      repository
-      usecase
-    presentaion
-      view
-      viewmodel
+  - dtl/feature
+    - data
+      - model
+      - repository
+    - domain
+      - entity
+      - repository
+      - usecase
+    - presentaion
+      - view
+      - viewmodel
 
 
 ## 주의사항
