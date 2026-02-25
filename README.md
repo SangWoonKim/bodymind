@@ -3,16 +3,16 @@ common_mutiple_health으로 명명된 직접 제작한 flutter native간 bridge 
 건강관리 어플리케이션입니다.
 
 ## convention
-,file name - snakeCase,
-,varient & class name - camel_case
-,enum - UPPERCASE,
+- file name : snakeCase,
+- varient & class name : camel_case
+- enum : UPPERCASE,
 
-,design pattern - MVVM (최대한...)
-,indent - tab
-,name role - class(folder + feature + role) 
+- design pattern : MVVM (최대한...)
+- indent : tab
+- name role : class(folder + feature + role) 
 
-,folder structure 
-,feature
+folder structure 
+feature
   - dtl/feature
     - data
       - model
