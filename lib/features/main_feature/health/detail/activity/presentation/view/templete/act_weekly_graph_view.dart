@@ -1,17 +1,18 @@
+import 'package:bodymind/features/main_feature/health/detail/activity/presentation/viewmodel/heatlh_act_view_model.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 class ActWeeklyGraphView extends StatelessWidget {
-  List<ActGraphData> dayByWalkCnt;
+  ActDtlState weeklyData;
   final bool hideFuture;
 
   ActWeeklyGraphView({
     super.key,
-    required dayByWalkCnt,
+    required this.weeklyData,
     this.hideFuture = true
   });
 
-  final weeklyBarGroupData = dayByWalk
+  // final weeklyBarGroupData = dayByWalk
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +27,7 @@ class ActWeeklyGraphView extends StatelessWidget {
         leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true)),
         bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true))
       ),
-      barGroups:
+      barGroups: []
     ));
   }
 }
