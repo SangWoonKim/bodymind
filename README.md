@@ -5,7 +5,7 @@ common_mutiple_health으로 명명된 직접 제작한 flutter native간 bridge 
 ## convention
 - file name : snakeCase,
 - varient & class name : camel_case
-- enum : UPPERCASE,
+- enum : lowercase,
 
 - design pattern : MVVM (최대한...)
 - indent : tab
@@ -32,7 +32,7 @@ feature
 만약 클론 후 빌드 하실 경우 개발자에게 문의하시기 바랍니다.
 
 ## 이슈사항
-- 2월 25일 기준
+- 2월 26일 기준
 - act 화면 제작 진행중입니다.
 - 초기 실행시 router쪽에서 redirect가 안되는 현상이 있습니다.(원인: isUserRegistered값이 변경되지 않음 - 회원정보 입력시 insert후 해당 상태이 변경이 가능하도록 watch로 작업하여 observing하거나 또는 주입을 통한 갱신 로직 작성 예정)
 - 아직 앱 바쪽은 개발중입니다. 다만 우선순위 밖이라 이후 할 예정입니다.
