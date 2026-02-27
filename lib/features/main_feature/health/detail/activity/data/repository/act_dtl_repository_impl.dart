@@ -10,8 +10,8 @@ class ActDtlRepositoryImpl extends ActDtlRepository{
   ActDtlRepositoryImpl(this.db);
 
   @override
-  Future<List<FeatureModel>?> loadActDataForDate(String yyyyMMdd) async{
-    List<TbFeatureActInfoData> result = await db.selectFeatureAct().get();
+  Future<List<FeatureModel>?> loadActDataForDate(String stYmd, String endYmd) async{
+    List<TbFeatureActInfoData> result = await db.selectFeatureActForDate(stYmd, endYmd).get();
     if(result.isEmpty) return null;
    return result.map((e) => FeatureModel(e.isrtDt!, FeatureAct('000000', '235959',e.stepCount,e.calorie,e.distance))).toList();
   }

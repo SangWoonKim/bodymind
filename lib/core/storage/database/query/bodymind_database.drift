@@ -25,6 +25,8 @@ create table tb_feature_act_info(
     calorie real not null
 );
 
+CREATE INDEX IF NOT EXISTS idx_act_isrt_dt ON tb_feature_act_info(isrt_dt);
+
 create table tb_feature_hr_info(
     isrt_dt text primary key,
     hr_lst text not null
@@ -131,6 +133,11 @@ from tb_feature_act_info
 where isrt_dt between strftime('%Y%m%d', 'now', 'localtime', '-6 day')
 and strftime('%Y%m%d', 'now', 'localtime');
 
+selectFeatureActForDate:
+SELECT isrt_dt, step_count, distance, calorie
+FROM tb_feature_act_info
+WHERE isrt_dt BETWEEN :stYmd AND :endYmd;
+
 -- Exercise
 selectFeatureExercise:
 SELECT
@@ -155,6 +162,7 @@ insertExerciseInfo:
       :distance, :calorie, :start_hhmm, :end_hhmm
     );
 
+insertExerciseHr:
 INSERT INTO tb_feature_exercise_hr(ex_sn, hr_lst, step_sec)
 VALUES (:exSn, :hrLst, :stepSec)
 ON CONFLICT(ex_sn) DO UPDATE SET
@@ -167,7 +175,7 @@ insertFeatureSleepInfo:
 INSERT INTO tb_feature_sleep_info (
   base_date, start_at, end_at,
   total_inbed_m, total_slp_m, total_awake_m, total_light_m, total_deep_m, total_rem_m
-) VALUES (:total_inbed_m, :total_slp_m, :total_awake_m, :total_light_m, :total_deep_m, :total_rem_m)
+) VALUES (:base_date, :start_at, :end_at, :total_inbed_m, :total_slp_m, :total_awake_m, :total_light_m, :total_deep_m, :total_rem_m)
 ON CONFLICT(base_date) DO UPDATE SET
   start_at = excluded.start_at,
   end_at = excluded.end_at,

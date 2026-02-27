@@ -13,10 +13,10 @@ class ActDtlUsecase {
 
   ActDtlUsecase(this.repository);
 
-  Future<ActGraphDto?> loadDbActData(String yyyyMM) async{
-    List<FeatureModel>? actModels = await repository.loadActDataForDate(yyyyMM);
+  Future<ActMonthDto?> loadDbActData(String stYMd, endYmd) async{
+    List<FeatureModel>? actModels = await repository.loadActDataForDate(stYMd, endYmd);
     if(actModels == null) return null;
-
+    return makeActDatas(actModels);
   }
 
 
@@ -46,7 +46,7 @@ class ActDtlUsecase {
       ActDailyDto? mostDay;
 
 
-      // 주차별 일자 데이터 삽입(반복중 총거리, 총칼로리, 총걸음수, 최대 걸은 날 산출)
+      /// 주차별 일자 데이터 삽입(반복중 총거리, 총칼로리, 총걸음수, 최대 걸은 날 산출)
       dailyData.forEach((act){
         final diffDay = e.start.difference(act.measrueDt).inDays;
         if(diffDay < 7 && diffDay >= 0) {
@@ -91,7 +91,9 @@ class ActDtlUsecase {
       weeklyData = List.empty(growable: true);
     });
 
-    final emptyListFilterLst = monthlyData.where((e) => e.weeklyMostActDay != null).toList();
+    ///월별 주차 summary 데이터 생성
+    //현재 월 + 이전 마지막 주 데이터가 있음으로 이전 마지막 주데이터 skip
+    final emptyListFilterLst = monthlyData.skip(1).where((e) => e.weeklyMostActDay != null).toList();
     int montlyTotStepCnt = 0;
     int montlyContinuousDays = 0;
     int acceptContinuousDays = 0;
@@ -99,7 +101,8 @@ class ActDtlUsecase {
       montlyTotStepCnt += e.weeklyTotStepCnt;
     });
 
-    final maxActiveDate = dailyData.reduce((a,b){
+    //이전 마지막 7일 데이터 skip
+    final maxActiveDate = dailyData.skip(7).reduce((a,b){
       final diffDate = a.measrueDt.difference(b.measrueDt).inDays;
       if(diffDate > 0 && diffDate < 2){
         montlyContinuousDays += 1;

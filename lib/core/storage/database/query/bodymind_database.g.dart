@@ -3323,6 +3323,10 @@ abstract class _$BodymindDatabase extends GeneratedDatabase {
   late final TbUserInfo tbUserInfo = TbUserInfo(this);
   late final TbDailyHrProxyInfo tbDailyHrProxyInfo = TbDailyHrProxyInfo(this);
   late final TbFeatureActInfo tbFeatureActInfo = TbFeatureActInfo(this);
+  late final Index idxActIsrtDt = Index(
+    'idx_act_isrt_dt',
+    'CREATE INDEX IF NOT EXISTS idx_act_isrt_dt ON tb_feature_act_info (isrt_dt)',
+  );
   late final TbFeatureHrInfo tbFeatureHrInfo = TbFeatureHrInfo(this);
   late final TbFeatureSleepInfo tbFeatureSleepInfo = TbFeatureSleepInfo(this);
   late final TbFeatureSleepDetail tbFeatureSleepDetail = TbFeatureSleepDetail(
@@ -3475,6 +3479,17 @@ abstract class _$BodymindDatabase extends GeneratedDatabase {
     ).asyncMap(tbFeatureActInfo.mapFromRow);
   }
 
+  Selectable<TbFeatureActInfoData> selectFeatureActForDate(
+    String? stYmd,
+    String? endYmd,
+  ) {
+    return customSelect(
+      'SELECT isrt_dt, step_count, distance, calorie FROM tb_feature_act_info WHERE isrt_dt BETWEEN ?1 AND ?2',
+      variables: [Variable<String>(stYmd), Variable<String>(endYmd)],
+      readsFrom: {tbFeatureActInfo},
+    ).asyncMap(tbFeatureActInfo.mapFromRow);
+  }
+
   Selectable<SelectFeatureExerciseResult> selectFeatureExercise() {
     return customSelect(
       'SELECT i.base_date, i.ex_sn, i.type, i.metric_kind, i.metric_val, i.distance, i.calorie, i.start_hhmm, i.end_hhmm, h.hr_lst, h.step_sec FROM tb_feature_exercise_info AS i JOIN tb_feature_exercise_hr AS h ON h.ex_sn = i.ex_sn WHERE i.base_date BETWEEN strftime(\'%Y%m%d\', \'now\', \'localtime\', \'-6 day\') AND strftime(\'%Y%m%d\', \'now\', \'localtime\') ORDER BY i.base_date, i.start_hhmm',
@@ -3523,20 +3538,38 @@ abstract class _$BodymindDatabase extends GeneratedDatabase {
     );
   }
 
+  Future<int> insertExerciseHr(int exSn, String hrLst, int stepSec) {
+    return customInsert(
+      'INSERT INTO tb_feature_exercise_hr (ex_sn, hr_lst, step_sec) VALUES (?1, ?2, ?3) ON CONFLICT (ex_sn) DO UPDATE SET hr_lst = excluded.hr_lst, step_sec = excluded.step_sec',
+      variables: [
+        Variable<int>(exSn),
+        Variable<String>(hrLst),
+        Variable<int>(stepSec),
+      ],
+      updates: {tbFeatureExerciseHr},
+    );
+  }
+
   Future<int> insertFeatureSleepInfo(
-    String totalInbedM,
-    String? totalSlpM,
-    String? totalAwakeM,
+    String baseDate,
+    String? startAt,
+    String? endAt,
+    int totalInbedM,
+    int totalSlpM,
+    int totalAwakeM,
     int totalLightM,
     int totalDeepM,
     int totalRemM,
   ) {
     return customInsert(
-      'INSERT INTO tb_feature_sleep_info (base_date, start_at, end_at, total_inbed_m, total_slp_m, total_awake_m, total_light_m, total_deep_m, total_rem_m) VALUES (?1, ?2, ?3, ?4, ?5, ?6) ON CONFLICT (base_date) DO UPDATE SET start_at = excluded.start_at, end_at = excluded.end_at, total_inbed_m = excluded.total_inbed_m, total_slp_m = excluded.total_slp_m, total_awake_m = excluded.total_awake_m, total_light_m = excluded.total_light_m, total_deep_m = excluded.total_deep_m, total_rem_m = excluded.total_rem_m',
+      'INSERT INTO tb_feature_sleep_info (base_date, start_at, end_at, total_inbed_m, total_slp_m, total_awake_m, total_light_m, total_deep_m, total_rem_m) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9) ON CONFLICT (base_date) DO UPDATE SET start_at = excluded.start_at, end_at = excluded.end_at, total_inbed_m = excluded.total_inbed_m, total_slp_m = excluded.total_slp_m, total_awake_m = excluded.total_awake_m, total_light_m = excluded.total_light_m, total_deep_m = excluded.total_deep_m, total_rem_m = excluded.total_rem_m',
       variables: [
-        Variable<String>(totalInbedM),
-        Variable<String>(totalSlpM),
-        Variable<String>(totalAwakeM),
+        Variable<String>(baseDate),
+        Variable<String>(startAt),
+        Variable<String>(endAt),
+        Variable<int>(totalInbedM),
+        Variable<int>(totalSlpM),
+        Variable<int>(totalAwakeM),
         Variable<int>(totalLightM),
         Variable<int>(totalDeepM),
         Variable<int>(totalRemM),
@@ -3611,6 +3644,7 @@ abstract class _$BodymindDatabase extends GeneratedDatabase {
     tbUserInfo,
     tbDailyHrProxyInfo,
     tbFeatureActInfo,
+    idxActIsrtDt,
     tbFeatureHrInfo,
     tbFeatureSleepInfo,
     tbFeatureSleepDetail,

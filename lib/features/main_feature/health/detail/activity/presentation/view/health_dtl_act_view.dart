@@ -1,6 +1,9 @@
 import 'package:bodymind/const/theme/global_theme.dart';
+import 'package:bodymind/core/util/fourth.dart';
 import 'package:bodymind/core/widget/cus_appbar.dart';
 import 'package:bodymind/features/main_feature/health/detail/activity/presentation/view/enum/act_graph_option.dart';
+import 'package:bodymind/features/main_feature/health/detail/activity/presentation/view/templete/act_montly_graph_view.dart';
+import 'package:bodymind/features/main_feature/health/detail/activity/presentation/view/templete/act_weekly_graph_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -168,70 +171,198 @@ class HealthDtlActView extends ConsumerWidget{
 
 
   Widget _actGraph(ActDtlState state){
+    final selectWeekOrMonth = TimeUtil().monthWeekByFirstMondayRuleToUi(state.selectedDate);
     return Container(
       width: 336.w,
       height: 324.h,
       color: Colors.white,
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 20.h, vertical: 20.w),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('주간 / 월간 활동량'),
-            SizedBox(
-              width: 140.w,
-              height: 28.h,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      color: state.selectedOption == ActGraphSelection.COUNT ? Color(0xffEEF2FF)
-                          : state.selectedOption == ActGraphSelection.CALORIE ? Color(0xffEEF2FF)
-                          : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xffEEF2FF) :
-                      Color(0xffF3F4F6)
-                    ),
-                    child: Center(
-                      child: Text('걸음수',
-                        style: HomeTheme.leadingTextStyle.copyWith(
-                            color: state.selectedOption == ActGraphSelection.COUNT ? Color(0xff4f46e5)
-                                : state.selectedOption == ActGraphSelection.CALORIE ? Color(0xff4f46e5)
-                                : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xff4f46e5)
-                                : Color(0xff4B5563)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(state.isWeekly ? '주간' : '월간', style: HomeTheme.titleTextStyle),
+                SizedBox(
+                  width: 210.w,
+                  height: 28.h,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(
+                        width: 60.w,
+                        height: 28.h,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: state.selectedOption == ActGraphSelection.COUNT ? Color(0xffEEF2FF)
+                              : state.selectedOption == ActGraphSelection.CALORIE ? Color(0xffF3F4F6)
+                              : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xffF3F4F6):
+                          Color(0xffF3F4F6)
+                        ),
+                        child: Center(
+                          child: Text('걸음수',
+                            style: HomeTheme.leadingTextStyle.copyWith(
+                                color: state.selectedOption == ActGraphSelection.COUNT ? Color(0xff4f46e5)
+                                    : state.selectedOption == ActGraphSelection.CALORIE ? Color(0xff4B5563)
+                                    : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xff4B5563)
+                                    : Color(0xff4B5563)
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        color: state.selectedOption == ActGraphSelection.COUNT ? Color(0xffEEF2FF)
-                            : state.selectedOption == ActGraphSelection.CALORIE ? Color(0xffEEF2FF)
-                            : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xffEEF2FF)
-                            : Color(0xffF3F4F6)
-                    ),
-                    child: Center(
-                      child: Text('활동시간',
-                        style: HomeTheme.leadingTextStyle.copyWith(
-                            color: state.selectedOption == ActGraphSelection.COUNT ? Color(0xff4f46e5)
-                                : state.selectedOption == ActGraphSelection.CALORIE ? Color(0xff4f46e5)
-                                : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xff4f46e5)
-                                : Color(0xff4B5563)
+                      Container(
+                        width: 60.w,
+                        height: 28.h,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            color: state.selectedOption == ActGraphSelection.COUNT ? Color(0xffF3F4F6)
+                                : state.selectedOption == ActGraphSelection.CALORIE ? Color(0xffEEF2FF)
+                                : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xffF3F4F6) :
+                            Color(0xffF3F4F6)
+                        ),
+                        child: Center(
+                          child: Text('칼로리',
+                            style: HomeTheme.leadingTextStyle.copyWith(
+                                color: state.selectedOption == ActGraphSelection.COUNT ? Color(0xff4B5563)
+                                    : state.selectedOption == ActGraphSelection.CALORIE ? Color(0xff4f46e5)
+                                    : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xff4B5563)
+                                    : Color(0xff4B5563)
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                      Container(
+                        width: 60.w,
+                        height: 28.h,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            color: state.selectedOption == ActGraphSelection.COUNT ? Color(0xffF3F4F6)
+                                : state.selectedOption == ActGraphSelection.CALORIE ? Color(0xffF3F4F6)
+                                : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xffEEF2FF)
+                                : Color(0xffF3F4F6)
+                        ),
+                        child: Center(
+                          child: Text('거리',
+                            style: HomeTheme.leadingTextStyle.copyWith(
+                                color: state.selectedOption == ActGraphSelection.COUNT ? Color(0xff4B5563)
+                                    : state.selectedOption == ActGraphSelection.CALORIE ? Color(0xff4B5563)
+                                    : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xff4f46e5)
+                                    : Color(0xff4B5563)
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            )
+                )
+              ],
+            ),
+
+
+            state.isWeekly ? ActWeeklyGraphView(weeklyData: state.actDatas.weeklyData[selectWeekOrMonth.week], option: state.selectedOption,)
+            : ActMontlyGraphView(montlyData: state.actDatas,option: state.selectedOption,)
           ],
         ),
       ),
     );
   }
 
+
+  Widget _gridSummaryInfo(ActDtlState state){
+    final  weekOrMonth = TimeUtil().monthWeekByFirstMondayRuleToUi(state.selectedDate);
+
+    Fourth<String, String, String, bool> totalStep = Fourth('', '', '', false);
+    Fourth<String, String, String, bool> totalCnt = Fourth('', '', '', false);
+    Fourth<String, String, String, bool> totalActiveDay = Fourth('', '', '', false);
+    Fourth<String, String, String, bool> totalWriting = Fourth('', '', '', false);
+
+    if(state.isWeekly){
+      final weeklyData = state.actDatas.weeklyData[weekOrMonth.week];
+      final prevWeeklyData = state.actDatas.weeklyData[weekOrMonth.week -1];
+      final prevPercent = (weeklyData.weeklyAvgStepCnt - prevWeeklyData.weeklyAvgStepCnt ~/ prevWeeklyData.weeklyAvgStepCnt).round();
+
+      totalStep = Fourth('이번 주 총 걸음수', weeklyData.weeklyTotStepCnt.toString() , '평균 ${weeklyData.weeklyAvgStepCnt}보/일', false);
+      totalCnt = Fourth('하루 평균 걸음수', weeklyData.weeklyAvgStepCnt.toString() , '${prevPercent}%', prevPercent < 0 ? false : true );
+      totalActiveDay = Fourth('가장 활동적인 날', TimeUtil.yyyyMMddToMdString(weeklyData.weeklyMostActDay.toString()) , '${weeklyData.actDailyData.firstWhere((e) => e.measrueDt == weeklyData.weeklyMostActDay).stepCnt}보', false);
+      totalWriting = Fourth('연속 활동 기록', '${weeklyData.weeklyContinuousCnt.toString()}일 연속' , '7000보 이상', false);
+    }else{
+      final montlyData = state.actDatas;
+      final prevMontlyData = state.actDatas;
+      final prevPercent = (montlyData.montlyAvgStepCnt - prevMontlyData.montlyAvgStepCnt ~/ prevMontlyData.montlyAvgStepCnt).round();
+
+      totalStep = Fourth('이번 달 총 걸음수', montlyData.montlyTotStepCnt.toString() , '평균 ${montlyData.montlyAvgStepCnt}보/일', false);
+      totalCnt = Fourth('주간 평균 걸음수', montlyData.montlyAvgStepCnt.toString() , '${prevPercent}%', prevPercent < 0 ? false : true );
+      totalActiveDay = Fourth('가장 활동적인 날', TimeUtil.yyyyMMddToMdString(montlyData.montlyMostActDay.toString()) , '${montlyData.weeklyData.firstWhere((e) => e.weeklyMostActDay == montlyData.montlyMostActDay).actDailyData.firstWhere((e) => e.measrueDt== montlyData.montlyMostActDay)}보', false);
+      totalWriting = Fourth('연속 활동 기록', '${montlyData.montlyContinuousCnt.toString()}일 연속' , '7000보 이상', false);
+    }
+
+    return SizedBox(
+      height: 224.h,
+      width: 336.w,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            crossAxisAlignment: .stretch,
+            children: [
+              _gridSummaryElement(totalStep.first, totalStep.second, totalStep.third, totalStep.fourth),
+              _gridSummaryElement(totalCnt.first, totalCnt.second, totalCnt.third, totalCnt.fourth)
+            ],
+          ),
+          Row(
+            crossAxisAlignment: .stretch,
+            children: [
+              _gridSummaryElement(totalActiveDay.first, totalActiveDay.second, totalActiveDay.third, totalActiveDay.fourth),
+              _gridSummaryElement(totalWriting.first, totalWriting.second, totalWriting.third, totalWriting.fourth)
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _gridSummaryElement(String title , String summary , String leadingText, bool isAvg ){
+    List<Widget> leadingArea = List.empty(growable: true);
+    if(isAvg){
+      leadingArea.add(SizedBox(
+          height: 16.h,
+          width: 7.5.w,
+          child: Icon(Icons.arrow_upward_rounded,)
+      ));
+      leadingArea.add(Gap(4.h));
+      leadingArea.add(
+          Text(leadingText,
+              style: HomeTheme.leadingTextStyle.copyWith(
+                  color: Color(0xff22c55e)
+              )
+          )
+      );
+    }
+    return Container(
+      width: 161.5.w,
+      height: 108.h,
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(12),),
+      child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
+          child: Column(
+            mainAxisAlignment: .spaceBetween,
+            crossAxisAlignment: .start,
+            children: [
+              Text(title),
+              Text(summary, style: FeatureTheme.hrScoreText,),
+              Row(
+                children: [
+
+                ]
+              )
+            ]
+          ),
+      ),
+    );
+  }
 
 
 
