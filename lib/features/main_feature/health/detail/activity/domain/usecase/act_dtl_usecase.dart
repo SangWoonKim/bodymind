@@ -86,8 +86,14 @@ class ActDtlUsecase {
         });
       }
 
+      if(totalStep == 0 || zeroFilterLst.isEmpty == 0){
+        monthlyData.add(ActWeekDto(weeklyData, 0, totalStep, e.start, mostDay?.measrueDt, continuousDays));
+      }else{
+        monthlyData.add(ActWeekDto(weeklyData, (totalStep/zeroFilterLst.length).round(), totalStep, e.start, mostDay?.measrueDt, continuousDays));
+      }
 
-      monthlyData.add(ActWeekDto(weeklyData, (totalStep/zeroFilterLst.length).round(), totalStep, e.start, mostDay?.measrueDt, continuousDays));
+
+
       weeklyData = List.empty(growable: true);
     });
 

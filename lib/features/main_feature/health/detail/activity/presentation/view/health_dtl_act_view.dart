@@ -1,6 +1,7 @@
 import 'package:bodymind/const/theme/global_theme.dart';
 import 'package:bodymind/core/util/fourth.dart';
 import 'package:bodymind/core/widget/cus_appbar.dart';
+import 'package:bodymind/features/main_feature/health/detail/activity/presentation/provider/health_act_dtl_provider.dart';
 import 'package:bodymind/features/main_feature/health/detail/activity/presentation/view/enum/act_graph_option.dart';
 import 'package:bodymind/features/main_feature/health/detail/activity/presentation/view/templete/act_montly_graph_view.dart';
 import 'package:bodymind/features/main_feature/health/detail/activity/presentation/view/templete/act_weekly_graph_view.dart';
@@ -14,24 +15,91 @@ import '../../../../../../../core/util/bodymind_core_util.dart';
 import '../../../../../home/presentation/theme/home_theme.dart';
 import '../../../util/feature_theme.dart';
 import '../viewmodel/heatlh_act_view_model.dart';
+class HealthDtlActView extends ConsumerStatefulWidget{
+  final String? receivedYmd;
 
-class HealthDtlActView extends ConsumerWidget{
+  HealthDtlActView({super.key, this.receivedYmd});
+
+@override
+  ConsumerState<ConsumerStatefulWidget> createState() => _HealthDtlActViewState();
+}
+class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
+  static const int _initialPage = 10000;
+  late final PageController _pageController;
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: _initialPage);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _movePrevDay() {
+    _pageController.previousPage(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOut,
+    );
+  }
+
+  void _moveNextDay() {
+    _pageController.nextPage(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOut,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(actDtlViewModelProvider);
+
     return Scaffold(
       //actions에 달력 아이콘을 넣어서 주간 월간 선택 달력을 띄워야함
       appBar: CustomAppBar(
         title: '활동 상세',
       ),
-      body:  Center(
-        child: Column(
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          _dateSelector(state, ref, _movePrevDay, _moveNextDay),
+          Gap(20.h),
+          Expanded(
+            child: PageView.builder(
+              controller: _pageController,
+              onPageChanged: (page){
+                // WidgetsBinding.instance.addPostFrameCallback((_){
+                //   // if(mounted) _pageController.jumpToPage(_initialPage);
+                // });
+              },
 
-        ),
+              itemBuilder: (context,idx){
+                return _infoSection(state);
+              },
+            ),
+          )
+        ],
       )
       ,
     );
   }
 
+  Widget _infoSection(ActDtlState state){
+    return state.actDatas.weeklyData.isEmpty ? CircularProgressIndicator(): SingleChildScrollView(
+      child: Column(
+        children: [
+          _evaluationWidget(state),
+          Gap(20.h),
+          _actGraph(state),
+          Gap(20.h),
+          _gridSummaryInfo(state)
+        ],
+      ),
+    );
+  }
 
   //날짜 selector(주간일경우 2월 1주차, 월간일경우 2월)
   Widget _dateSelector(
@@ -181,89 +249,95 @@ class HealthDtlActView extends ConsumerWidget{
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(state.isWeekly ? '주간' : '월간', style: HomeTheme.titleTextStyle),
-                SizedBox(
-                  width: 210.w,
-                  height: 28.h,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Container(
-                        width: 60.w,
-                        height: 28.h,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          color: state.selectedOption == ActGraphSelection.COUNT ? Color(0xffEEF2FF)
-                              : state.selectedOption == ActGraphSelection.CALORIE ? Color(0xffF3F4F6)
-                              : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xffF3F4F6):
-                          Color(0xffF3F4F6)
-                        ),
-                        child: Center(
-                          child: Text('걸음수',
-                            style: HomeTheme.leadingTextStyle.copyWith(
-                                color: state.selectedOption == ActGraphSelection.COUNT ? Color(0xff4f46e5)
-                                    : state.selectedOption == ActGraphSelection.CALORIE ? Color(0xff4B5563)
-                                    : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xff4B5563)
-                                    : Color(0xff4B5563)
-                            ),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        width: 60.w,
-                        height: 28.h,
-                        decoration: BoxDecoration(
+            SizedBox(
+              height: 28.h,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(state.isWeekly ? '주간' : '월간', style: HomeTheme.titleTextStyle),
+                  SizedBox(
+                    width: 210.w,
+                    height: 28.h,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Container(
+                          width: 60.w,
+                          height: 28.h,
+                          decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(8),
-                            color: state.selectedOption == ActGraphSelection.COUNT ? Color(0xffF3F4F6)
-                                : state.selectedOption == ActGraphSelection.CALORIE ? Color(0xffEEF2FF)
-                                : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xffF3F4F6) :
-                            Color(0xffF3F4F6)
-                        ),
-                        child: Center(
-                          child: Text('칼로리',
-                            style: HomeTheme.leadingTextStyle.copyWith(
-                                color: state.selectedOption == ActGraphSelection.COUNT ? Color(0xff4B5563)
-                                    : state.selectedOption == ActGraphSelection.CALORIE ? Color(0xff4f46e5)
-                                    : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xff4B5563)
-                                    : Color(0xff4B5563)
-                            ),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        width: 60.w,
-                        height: 28.h,
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            color: state.selectedOption == ActGraphSelection.COUNT ? Color(0xffF3F4F6)
+                            color: state.selectedOption == ActGraphSelection.COUNT ? Color(0xffEEF2FF)
                                 : state.selectedOption == ActGraphSelection.CALORIE ? Color(0xffF3F4F6)
-                                : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xffEEF2FF)
-                                : Color(0xffF3F4F6)
-                        ),
-                        child: Center(
-                          child: Text('거리',
-                            style: HomeTheme.leadingTextStyle.copyWith(
-                                color: state.selectedOption == ActGraphSelection.COUNT ? Color(0xff4B5563)
-                                    : state.selectedOption == ActGraphSelection.CALORIE ? Color(0xff4B5563)
-                                    : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xff4f46e5)
-                                    : Color(0xff4B5563)
+                                : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xffF3F4F6):
+                            Color(0xffF3F4F6)
+                          ),
+                          child: Center(
+                            child: Text('걸음수',
+                              style: HomeTheme.leadingTextStyle.copyWith(
+                                  color: state.selectedOption == ActGraphSelection.COUNT ? Color(0xff4f46e5)
+                                      : state.selectedOption == ActGraphSelection.CALORIE ? Color(0xff4B5563)
+                                      : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xff4B5563)
+                                      : Color(0xff4B5563)
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                )
-              ],
+                        Container(
+                          width: 60.w,
+                          height: 28.h,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              color: state.selectedOption == ActGraphSelection.COUNT ? Color(0xffF3F4F6)
+                                  : state.selectedOption == ActGraphSelection.CALORIE ? Color(0xffEEF2FF)
+                                  : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xffF3F4F6) :
+                              Color(0xffF3F4F6)
+                          ),
+                          child: Center(
+                            child: Text('칼로리',
+                              style: HomeTheme.leadingTextStyle.copyWith(
+                                  color: state.selectedOption == ActGraphSelection.COUNT ? Color(0xff4B5563)
+                                      : state.selectedOption == ActGraphSelection.CALORIE ? Color(0xff4f46e5)
+                                      : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xff4B5563)
+                                      : Color(0xff4B5563)
+                              ),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          width: 60.w,
+                          height: 28.h,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              color: state.selectedOption == ActGraphSelection.COUNT ? Color(0xffF3F4F6)
+                                  : state.selectedOption == ActGraphSelection.CALORIE ? Color(0xffF3F4F6)
+                                  : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xffEEF2FF)
+                                  : Color(0xffF3F4F6)
+                          ),
+                          child: Center(
+                            child: Text('거리',
+                              style: HomeTheme.leadingTextStyle.copyWith(
+                                  color: state.selectedOption == ActGraphSelection.COUNT ? Color(0xff4B5563)
+                                      : state.selectedOption == ActGraphSelection.CALORIE ? Color(0xff4B5563)
+                                      : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xff4f46e5)
+                                      : Color(0xff4B5563)
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                ],
+              ),
             ),
 
+            SizedBox(
+              height: 240.h,
+              child: state.isWeekly ? ActWeeklyGraphView(weeklyData: state.actDatas.weeklyData[selectWeekOrMonth.week -1], option: state.selectedOption,)
+                  : ActMontlyGraphView(montlyData: state.actDatas,option: state.selectedOption,),
+            )
 
-            state.isWeekly ? ActWeeklyGraphView(weeklyData: state.actDatas.weeklyData[selectWeekOrMonth.week], option: state.selectedOption,)
-            : ActMontlyGraphView(montlyData: state.actDatas,option: state.selectedOption,)
           ],
         ),
       ),
@@ -280,13 +354,17 @@ class HealthDtlActView extends ConsumerWidget{
     Fourth<String, String, String, bool> totalWriting = Fourth('', '', '', false);
 
     if(state.isWeekly){
-      final weeklyData = state.actDatas.weeklyData[weekOrMonth.week];
-      final prevWeeklyData = state.actDatas.weeklyData[weekOrMonth.week -1];
-      final prevPercent = (weeklyData.weeklyAvgStepCnt - prevWeeklyData.weeklyAvgStepCnt ~/ prevWeeklyData.weeklyAvgStepCnt).round();
+
+      final weeklyData = state.actDatas.weeklyData[weekOrMonth.week -1];
+      final prevWeeklyData = state.actDatas.weeklyData[weekOrMonth.week -2];
+      int diffStepCnt = (weeklyData.weeklyAvgStepCnt - prevWeeklyData.weeklyAvgStepCnt);
+      print(weeklyData.weeklyAvgStepCnt);
+      print(prevWeeklyData.weeklyAvgStepCnt);
+      final prevPercent = diffStepCnt == 0 ? 0 : (diffStepCnt ~/ (prevWeeklyData.weeklyAvgStepCnt == 0 ? 1 : prevWeeklyData.weeklyAvgStepCnt)).round();
 
       totalStep = Fourth('이번 주 총 걸음수', weeklyData.weeklyTotStepCnt.toString() , '평균 ${weeklyData.weeklyAvgStepCnt}보/일', false);
       totalCnt = Fourth('하루 평균 걸음수', weeklyData.weeklyAvgStepCnt.toString() , '${prevPercent}%', prevPercent < 0 ? false : true );
-      totalActiveDay = Fourth('가장 활동적인 날', TimeUtil.yyyyMMddToMdString(weeklyData.weeklyMostActDay.toString()) , '${weeklyData.actDailyData.firstWhere((e) => e.measrueDt == weeklyData.weeklyMostActDay).stepCnt}보', false);
+      totalActiveDay = Fourth('가장 활동적인 날', weeklyData.weeklyMostActDay == null ?'데이터없음':TimeUtil.yyyyMMddToMdForDate(weeklyData.weeklyMostActDay!) , '${weeklyData.actDailyData.firstWhere((e) => e.measrueDt == weeklyData.weeklyMostActDay).stepCnt}보', false);
       totalWriting = Fourth('연속 활동 기록', '${weeklyData.weeklyContinuousCnt.toString()}일 연속' , '7000보 이상', false);
     }else{
       final montlyData = state.actDatas;
@@ -306,14 +384,14 @@ class HealthDtlActView extends ConsumerWidget{
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
-            crossAxisAlignment: .stretch,
+            // crossAxisAlignment: .stretch,
             children: [
               _gridSummaryElement(totalStep.first, totalStep.second, totalStep.third, totalStep.fourth),
               _gridSummaryElement(totalCnt.first, totalCnt.second, totalCnt.third, totalCnt.fourth)
             ],
           ),
           Row(
-            crossAxisAlignment: .stretch,
+            // crossAxisAlignment: .stretch,
             children: [
               _gridSummaryElement(totalActiveDay.first, totalActiveDay.second, totalActiveDay.third, totalActiveDay.fourth),
               _gridSummaryElement(totalWriting.first, totalWriting.second, totalWriting.third, totalWriting.fourth)

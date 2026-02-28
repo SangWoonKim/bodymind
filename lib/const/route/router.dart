@@ -1,3 +1,4 @@
+import 'package:bodymind/features/main_feature/health/detail/activity/presentation/view/health_dtl_act_view.dart';
 import 'package:bodymind/features/main_feature/health/detail/heartrate/presentation/view/health_dtl_heart_view.dart';
 import 'package:bodymind/features/main_feature/main_feature_nav/bottom_navigation_view.dart';
 import 'package:bodymind/features/splash/presentation/provider/splash_provider.dart';
@@ -47,13 +48,27 @@ final routeProvider = Provider<GoRouter>((ref){
               final ymd = state.pathParameters['ymd'];
               return HealthDtlHeartView(receivedYmd: ymd);
             }
-
         ),
         GoRoute(
           path: '/feature/heart',
           name: 'featureHeart',
           builder: (context, state) {
             return HealthDtlHeartView(); // ymd 없이
+          },
+        ),
+        GoRoute(
+            path: '/feature/act/:ymd',
+            name: 'featureActYmd',
+            builder: (context, state) {
+              final ymd = state.pathParameters['ymd'];
+              return HealthDtlActView(receivedYmd: ymd,);
+            }
+        ),
+        GoRoute(
+          path: '/feature/act',
+          name: 'featureAct',
+          builder: (context, state) {
+            return HealthDtlActView(); // ymd 없이
           },
         ),
         //bottomNavigationView 하위 위젯 정의

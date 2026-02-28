@@ -1,12 +1,15 @@
 import 'package:bodymind/core/util/bodymind_core_util.dart';
 import 'package:bodymind/features/main_feature/health/detail/activity/domain/entity/act_graph_dto.dart';
 import 'package:bodymind/features/main_feature/health/detail/activity/domain/entity/act_month_dto.dart';
+import 'package:bodymind/features/main_feature/health/detail/activity/domain/entity/act_week_dto.dart';
 import 'package:bodymind/features/main_feature/health/detail/activity/domain/usecase/act_dtl_usecase.dart';
 import 'package:bodymind/features/main_feature/health/detail/activity/presentation/view/enum/act_graph_option.dart';
 import 'package:bodymind/features/main_feature/home/domain/usecase/home_usecase.dart';
 import 'package:bodymind/features/main_feature/home/presentation/viewmodel/injector/home_act_injector.dart';
 import 'package:bodymind/features/main_feature/home/util/home_score_util.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../provider/health_act_dtl_provider.dart';
 
 class ActDtlState {
   final int mainScore;
@@ -17,6 +20,7 @@ class ActDtlState {
   final ActMonthDto prevActDatas;
   final DateTime selectedDate;
   final String evaluationPrev;
+
 
   ActDtlState(
     this.mainScore,
@@ -66,13 +70,12 @@ class ActDtlState {
   }
 }
 
-class HeatlhActViewModel extends Notifier<ActDtlState> {
-  final ActDtlUsecase _actUsecase;
-
-  HeatlhActViewModel(this._actUsecase);
+class HealthActViewModel extends Notifier<ActDtlState> {
+  late final ActDtlUsecase _actUsecase;
 
   @override
   ActDtlState build() {
+    _actUsecase = ref.read(actDtlUsecase);
     Future.microtask(() => _loadActData(DateTime.now()));
     return ActDtlState.initial();
   }
@@ -89,28 +92,54 @@ class HeatlhActViewModel extends Notifier<ActDtlState> {
     final currentMonth = await _actUsecase.loadDbActData(stDate, enDate);
     final prevMonth = await _actUsecase.loadDbActData(prevStDate, prevEndDate);
 
-    //이걸로 점수 산출을 해야하는데... 이게 하루 단위란 말이지....? 반복해서 계속 객체를 생성해가면서 할까...?
-    // HomeScoreUtil().activityScoreUpToNow(hour: hour, min: min, steps: steps, distance: distance, weight: weight, height: height, age: age, isMale: isMale)
-    // String mainScoreEvaluation  = '데이터 없음;'
-    // if(state.isWeekly){
-    //     mainScoreEvaluation = '전주 대비 ${}'
-    // }
     state = state.copyWith(actDatas: currentMonth, prevActDatas: prevMonth);
   }
 
   Future<void> _changeMonth({int? moveWeek, int? moveMonth}) async{
     if(moveWeek != null && moveMonth == null){
+      //1주 전 또는 1주 후 DateTime
       final week = state.selectedDate.add(Duration(days: moveWeek * 7));
       final loadMonthRange = TimeUtil().buildMonthWeekRanges(week.year, week.month).monthStart;
-      if(loadMonthRange != state.selectedDate.month){
+      //몇주차인지
+      final weekInt = TimeUtil().monthWeekByFirstMondayRuleToUi(week).week;
+
+      if(loadMonthRange.month != state.selectedDate.month){
         await _loadActData(loadMonthRange);
-        state = state.copyWith(selectedDate: week);
+        state = state.copyWith(isWeekly: true, selectedDate: week);
       }
+      _calculatedWeekScore(state.actDatas.weeklyData[weekInt], state.actDatas.weeklyData[weekInt -1]);
+
+
     }else if(moveWeek == null && moveMonth != null){
       final month = DateTime(state.selectedDate.year, state.selectedDate.month + moveMonth, state.selectedDate.day);
       final loadMonthRange = TimeUtil().buildMonthWeekRanges(month.year, month.month).monthStart;
       await _loadActData(loadMonthRange);
-      state = state.copyWith(selectedDate: month);
+      state = state.copyWith(isWeekly : false, selectedDate: month);
     }
   }
+
+  void _calculatedWeekScore(ActWeekDto targetWeek, ActWeekDto prevWeek) {
+    final targetWeekScore = _createScore(targetWeek);
+    final prevWeekScore = _createScore(targetWeek);
+    final different = (targetWeekScore - prevWeekScore) / prevWeekScore;
+
+    final mainScoreEvaluation = '전주 대비 $different ${different > 0 ? '증가' : '감소'}' ;
+    state = state.copyWith(mainScoreEvaluation: mainScoreEvaluation, mainScore: targetWeekScore, evaluationPrev: ' $different%');
+  }
+
+  int _createScore(ActWeekDto data){
+    final now = DateTime.now();
+
+    return data.actDailyData.where((e) => e.stepCnt != 0).toList().map((e) {
+      final dataYmd = e.measrueDt;
+      int score = 0;
+      if(TimeUtil.dateTimeToyymmdd(now) == TimeUtil.dateTimeToyymmdd(dataYmd)){
+        score = HomeScoreUtil().activityScoreUpToNow(hour: now.hour, min: now.minute, steps: e.stepCnt, distance: e.distance, weight: 70, height: 170, age: 32, isMale: true);
+      }else{
+        score = HomeScoreUtil().activityScoreUpToNow(hour: dataYmd.hour, min: dataYmd.minute, steps: e.stepCnt, distance: e.distance, weight: 70, height: 170, age: 32, isMale: true);
+      }
+      return score;
+    }).reduce((a,b) => a+b);
+  }
+
 }

@@ -23,16 +23,18 @@ class ActWeeklyGraphView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BarChart(BarChartData(
-      maxY: 7,
+      maxY: 20000,
       minY: 0,
       gridData: FlGridData(show: true),
       borderData: FlBorderData(show: true),
       titlesData: FlTitlesData(
           show: true,
+          rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              interval: 20,
+              interval: 2000,
               reservedSize: 36,
               getTitlesWidget: (value, meta) => Text(value.toInt().toString()),),
           ),

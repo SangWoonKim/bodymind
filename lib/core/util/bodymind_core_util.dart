@@ -87,6 +87,9 @@ class TimeUtil {
   static String commonKoreanDate(DateTime date) {
     return DateFormat('M월 d일 (E)', 'ko_KR').format(date);
   }
+  static String yyyyMMddToMdForDate(DateTime date) {
+    return DateFormat('M월 d일 (E)', 'ko_KR').format(date);
+  }
 
   static String yyyyMMddToMdString(String date){
     return DateFormat('M월 d일', 'ko_KR').format(yyyyMMddToDateTime(date));

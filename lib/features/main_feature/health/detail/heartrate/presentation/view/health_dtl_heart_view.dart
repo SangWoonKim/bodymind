@@ -398,11 +398,11 @@ class _HealthDtlHeartViewState extends ConsumerState<HealthDtlHeartView> {
       child: Column(
         children: [
           summarizedRow(state),
-          SizedBox(height: 20.h),
+          Gap(20.h),
           stableSectionGraph(state),
-          SizedBox(height: 20.h),
+          Gap(20.h),
           dailyHrGraph(state),
-          SizedBox(height: 20.h),
+          Gap(20.h),
         ],
       ),
     );
