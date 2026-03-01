@@ -99,6 +99,17 @@ class TimeUtil {
     return DateFormat('E요일', 'ko_KR').format(yyyyMMddToDateTime(date));
   }
 
+  static DateTime dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
+
+  /// date between 주로 특정데이터가 start, end 사이에 있는지 체크할 때 사용. inclusive (start <= date <= end)
+  static bool isInDateRangeInclusive(DateTime target, DateTime start, DateTime end) {
+    final targetDate = dateOnly(target);
+    final startDate = dateOnly(start);
+    final endDate = dateOnly(end);
+
+    return !targetDate.isBefore(startDate) && !targetDate.isAfter(endDate);
+  }
+
   /**
    * ============================ 주차 별 계산(bussiness rogic) start
    * */
@@ -114,13 +125,22 @@ class TimeUtil {
     return firstDay.add(Duration(days: daysToNextMonday));
   }
 
+  /// 월~일 중, date가 속한 주의 "일요일" 반환
+  DateTime _endOfWeekSunday(DateTime date) {
+    final d = DateTime(date.year, date.month, date.day);
+    final diff = DateTime.sunday - d.weekday; // 일요일이면 0, 토요일이면 1 ...
+    return d.add(Duration(days: diff));
+  }
+
   ///월 주차 계산 + 0주차 제거(전월로 넘김)
   MonthRangeResult buildMonthWeekRanges(int year, int month) {
     final start = _monthStart(year, month);
-    final end = _monthEnd(year, month);
+
+    final monthLastDay = _monthEnd(year, month);
+    final end = _endOfWeekSunday(monthLastDay);
+
     final week1Start = firstMondayOfMonthToInt(year, month);
 
-    // week1Start가 monthEnd보다 뒤면(그 달에 월요일이 없는 경우는 없음) 방어 처리
     if (week1Start.isAfter(end)) {
       return MonthRangeResult(start, end, const []);
     }
@@ -131,9 +151,7 @@ class TimeUtil {
 
     while (!curStart.isAfter(end)) {
       final curEnd = curStart.add(const Duration(days: 6));
-      final clampedEnd = curEnd.isAfter(end) ? end : curEnd;
-
-      weeks.add(WeekRange(w, curStart, clampedEnd));
+      weeks.add(WeekRange(w, curStart, curEnd));
 
       w += 1;
       curStart = curStart.add(const Duration(days: 7));
@@ -194,4 +212,6 @@ class TimeUtil {
       weekEnd: weekEnd,
     );
   }
+
+
 }

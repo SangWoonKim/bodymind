@@ -44,16 +44,17 @@ class ActDtlUsecase {
       double totalDistance = 0;
       double totalCalorie = 0;
       ActDailyDto? mostDay;
-
-
+      print(e.start);
+      print(e.end);
       /// 주차별 일자 데이터 삽입(반복중 총거리, 총칼로리, 총걸음수, 최대 걸은 날 산출)
       dailyData.forEach((act){
-        final diffDay = e.start.difference(act.measrueDt).inDays;
-        if(diffDay < 7 && diffDay >= 0) {
+
+        if(TimeUtil.isInDateRangeInclusive(act.measrueDt, e.start, e.end)) {
           weeklyData.add(act);
           totalStep += act.stepCnt;
           totalDistance += act.distance;
           totalCalorie += act.calorie;
+          // print(act.measrueDt);
           if(mostDay == null){
             mostDay = act;
           }else{
@@ -108,26 +109,33 @@ class ActDtlUsecase {
     });
 
     //이전 마지막 7일 데이터 skip
-    final maxActiveDate = dailyData.skip(7).reduce((a,b){
-      final diffDate = a.measrueDt.difference(b.measrueDt).inDays;
-      if(diffDate > 0 && diffDate < 2){
-        montlyContinuousDays += 1;
-      }else{
-        montlyContinuousDays = 0;
-      }
+    print(dailyData.length);
+    final lastSevenDayFilterLst = dailyData.where((e) => montlyDate.monthStart.isAfter(e.measrueDt)).toList();
 
-      if(acceptContinuousDays < montlyContinuousDays){
-        acceptContinuousDays = montlyContinuousDays;
-      }
-      return a.stepCnt > b.stepCnt ? a : b;
-    });
+    ActDailyDto? maxActiveDate = null;
+    if(lastSevenDayFilterLst.isNotEmpty){
+      maxActiveDate = lastSevenDayFilterLst.reduce((a,b){
+        final diffDate = a.measrueDt.difference(b.measrueDt).inDays;
+        if(diffDate > 0 && diffDate < 2){
+          montlyContinuousDays += 1;
+        }else{
+          montlyContinuousDays = 0;
+        }
+
+        if(acceptContinuousDays < montlyContinuousDays){
+          acceptContinuousDays = montlyContinuousDays;
+        }
+        return a.stepCnt > b.stepCnt ? a : b;
+      });
+    }
+
 
     return ActMonthDto(
         monthlyData,
-        (montlyTotStepCnt/ emptyListFilterLst.length).round(),
+        montlyTotStepCnt != 0 ? (montlyTotStepCnt/ emptyListFilterLst.length).round() : 0,
         montlyTotStepCnt,
         montlyDate.monthStart,
-        maxActiveDate.measrueDt,
+        maxActiveDate?.measrueDt,
         acceptContinuousDays
     );
 
