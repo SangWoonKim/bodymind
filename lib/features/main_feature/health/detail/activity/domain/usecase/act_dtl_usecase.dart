@@ -13,17 +13,21 @@ class ActDtlUsecase {
 
   ActDtlUsecase(this.repository);
 
-  Future<ActMonthDto?> loadDbActData(String stYMd, endYmd) async{
+  Future<ActMonthDto?> loadDbActData(String stYMd, endYmd, DateTime selectMonth) async{
+    print('stYmd = ${stYMd}');
+    print('endYmd = ${endYmd}');
     List<FeatureModel>? actModels = await repository.loadActDataForDate(stYMd, endYmd);
     if(actModels == null) return null;
-    return makeActDatas(actModels);
+    return makeActDatas(actModels, selectMonth);
   }
 
 
-  ActMonthDto makeActDatas(List<FeatureModel> actModels){
-    final existFirstDate = TimeUtil.yyyyMMddToDateTime(actModels.first.instDt);
-    final montlyDate = TimeUtil().buildMonthWeekRanges(existFirstDate.year, existFirstDate.month);
-
+  ActMonthDto makeActDatas(List<FeatureModel> actModels, DateTime selectMonth){
+    print('called');
+    ///여기 아예 데이터가 없을 경우 빈값 추가 로직 필요함
+    // final existFirstDate = TimeUtil.yyyyMMddToDateTime(actModels.first.instDt);
+    // final recDate = TimeUtil.yyyyMMddToDateTime(startYmd);
+    MonthRangeResult montlyDate = TimeUtil().buildMonthWeekRanges(selectMonth.year, selectMonth.month);
     List<ActDailyDto> dailyData = List.empty(growable: true);
 
     //List<FeatureModel> => List<ActDailyDto>
@@ -37,15 +41,14 @@ class ActDtlUsecase {
 
     //주별 데이터 group객체 생성
     List<ActWeekDto> monthlyData = List.empty(growable: true);
-
+    montlyDate.weeks.insert(0, WeekRange(0, montlyDate.weeks.first.start.add(Duration(days: -7)), montlyDate.weeks.first.end.add(Duration(days: -7))));
     montlyDate.weeks.forEach((e){
+      print('montlyDate = ${e.start}');
       List<ActDailyDto> weeklyData = List.empty(growable: true);
       int totalStep = 0;
       double totalDistance = 0;
       double totalCalorie = 0;
       ActDailyDto? mostDay;
-      print(e.start);
-      print(e.end);
       /// 주차별 일자 데이터 삽입(반복중 총거리, 총칼로리, 총걸음수, 최대 걸은 날 산출)
       dailyData.forEach((act){
 
@@ -109,7 +112,6 @@ class ActDtlUsecase {
     });
 
     //이전 마지막 7일 데이터 skip
-    print(dailyData.length);
     final lastSevenDayFilterLst = dailyData.where((e) => montlyDate.monthStart.isAfter(e.measrueDt)).toList();
 
     ActDailyDto? maxActiveDate = null;

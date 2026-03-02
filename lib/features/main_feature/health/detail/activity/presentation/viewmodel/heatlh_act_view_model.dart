@@ -86,16 +86,17 @@ class HealthActViewModel extends Notifier<ActDtlState> {
     final stDate = TimeUtil.dateTimeToyymmdd(loadMonthRange.monthStart.add(Duration(days: -7)));
     final enDate = TimeUtil.dateTimeToyymmdd(loadMonthRange.monthEnd);
 
-    final prevStDate = TimeUtil.dateTimeToyymmdd(loadMonthRange.monthStart);
-    final prevEndDate = TimeUtil.dateTimeToyymmdd(loadMonthRange.monthEnd);
+    final loadPrevMonthRange = TimeUtil().buildMonthWeekRanges(requestDate.year, requestDate.month -1);
+    final prevStDate = TimeUtil.dateTimeToyymmdd(loadPrevMonthRange.monthStart);
+    final prevEndDate = TimeUtil.dateTimeToyymmdd(loadPrevMonthRange.monthEnd);
 
-    final currentMonth = await _actUsecase.loadDbActData(stDate, enDate);
-    final prevMonth = await _actUsecase.loadDbActData(prevStDate, prevEndDate);
+    final currentMonth = await _actUsecase.loadDbActData(stDate, enDate, loadMonthRange.weeks[1].start);
+    final prevMonth = await _actUsecase.loadDbActData(prevStDate, prevEndDate, loadPrevMonthRange.weeks[1].start);
 
     state = state.copyWith(actDatas: currentMonth, prevActDatas: prevMonth);
   }
 
-  Future<void> _changeMonth({int? moveWeek, int? moveMonth}) async{
+  Future<void> changeMonth({int? moveWeek, int? moveMonth}) async{
     if(moveWeek != null && moveMonth == null){
       //1주 전 또는 1주 후 DateTime
       final week = state.selectedDate.add(Duration(days: moveWeek * 7));
@@ -103,19 +104,23 @@ class HealthActViewModel extends Notifier<ActDtlState> {
       //몇주차인지
       final weekInt = TimeUtil().monthWeekByFirstMondayRuleToUi(week).week;
 
+
       if(loadMonthRange.month != state.selectedDate.month){
         await _loadActData(loadMonthRange);
-        state = state.copyWith(isWeekly: true, selectedDate: week);
       }
+      state = state.copyWith(isWeekly: true, selectedDate: week);
       _calculatedWeekScore(state.actDatas.weeklyData[weekInt], state.actDatas.weeklyData[weekInt -1]);
 
-
+      print('changeMonth = ${state.selectedDate}');
     }else if(moveWeek == null && moveMonth != null){
       final month = DateTime(state.selectedDate.year, state.selectedDate.month + moveMonth, state.selectedDate.day);
       final loadMonthRange = TimeUtil().buildMonthWeekRanges(month.year, month.month).monthStart;
       await _loadActData(loadMonthRange);
       state = state.copyWith(isWeekly : false, selectedDate: month);
     }
+
+
+
   }
 
   void _calculatedWeekScore(ActWeekDto targetWeek, ActWeekDto prevWeek) {
@@ -130,6 +135,9 @@ class HealthActViewModel extends Notifier<ActDtlState> {
   int _createScore(ActWeekDto data){
     final now = DateTime.now();
 
+    if(data.actDailyData.isEmpty){
+      return 0;
+    }
     return data.actDailyData.where((e) => e.stepCnt != 0).toList().map((e) {
       final dataYmd = e.measrueDt;
       int score = 0;

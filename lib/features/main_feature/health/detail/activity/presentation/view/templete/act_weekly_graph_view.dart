@@ -22,11 +22,24 @@ class ActWeeklyGraphView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final maxY = weeklyData.actDailyData.isEmpty ? 
+    10000 : weeklyData.actDailyData.map((e) {
+      int selectObj = 0;
+      if(option == ActGraphSelection.CALORIE){
+        selectObj = e.calorie.toInt();
+      }else if(option == ActGraphSelection.DISTANCE){
+        selectObj = e.distance.toInt();
+      }else{
+        selectObj = e.stepCnt.toInt();
+      }
+      return selectObj;
+    }).reduce((a,b) => a > b ? a : b ).clamp(0, 100000).toDouble();
+
     return BarChart(BarChartData(
-      maxY: 20000,
+      maxY: maxY.toDouble(),
       minY: 0,
-      gridData: FlGridData(show: true),
-      borderData: FlBorderData(show: true),
+      gridData: FlGridData(show: true, drawVerticalLine: false),
+      borderData: FlBorderData(show: false, border: Border(bottom:BorderSide(color: Colors.grey) ,left:BorderSide(color: Colors.grey))),
       titlesData: FlTitlesData(
           show: true,
           rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -56,7 +69,12 @@ class ActWeeklyGraphView extends StatelessWidget {
     List<BarChartGroupData> result = List.empty(growable: true);
     DateTime start = weeklyData.weeklyMondayDate;
     List<ActDailyDto> dailyData = List.empty(growable: true);
-
+    if(weeklyData.actDailyData.isEmpty){
+      for(int x = 0; x < 7; x++){
+        result.add(BarChartGroupData(x: x, barRods: [BarChartRodData(toY: 0, color: Colors.deepPurpleAccent)]));
+      }
+      return result;
+    }
     //7일 데이터 주입 및 없을 경우 생성
     weeklyData.actDailyData.forEach((e){
       int diffDay = start.difference(e.measrueDt).inDays;
@@ -72,10 +90,16 @@ class ActWeeklyGraphView extends StatelessWidget {
       }
     });
     //반복후 없을 경우 추가 생성
-    final modDay = dailyData.last.measrueDt.difference(start).inDays;
-    if(modDay != 0){
-      for(int i = 0; i< modDay; i++){
-        dailyData.add(ActDailyDto(0, 0, 0, DateTime(start.year, start.month, start.day + 1)));
+    final modDay = start.add(Duration(days: 6)).difference(dailyData.last.measrueDt).inDays;
+
+    if(dailyData.length != 7){
+
+      final emptylen = 7 -dailyData.length;
+      print('dailyData len = ${dailyData.length}');
+      print('add len = ${emptylen}');
+      for(int i = 0; i < emptylen; i++){
+        print('empty add');
+        dailyData.add(ActDailyDto(0, 0, 0, DateTime(start.year, start.month, start.day + i)));
       }
     }
     switch(select){
@@ -87,12 +111,12 @@ class ActWeeklyGraphView extends StatelessWidget {
         break;
       case ActGraphSelection.DISTANCE:
         for(int x = 0; x < dailyData.length; x++){
-          result.add(BarChartGroupData(x: x, barRods: [BarChartRodData(toY: dailyData[x].stepCnt.toDouble(), color: Colors.deepPurpleAccent)]));
+          result.add(BarChartGroupData(x: x, barRods: [BarChartRodData(toY: dailyData[x].distance.toDouble(), color: Colors.deepPurpleAccent)]));
         }
         break;
       case ActGraphSelection.CALORIE:
         for(int x = 0; x < dailyData.length; x++){
-          result.add(BarChartGroupData(x: x, barRods: [BarChartRodData(toY: dailyData[x].stepCnt.toDouble(), color: Colors.deepPurpleAccent)]));
+          result.add(BarChartGroupData(x: x, barRods: [BarChartRodData(toY: dailyData[x].calorie.toDouble(), color: Colors.deepPurpleAccent)]));
         }
         break;
     }

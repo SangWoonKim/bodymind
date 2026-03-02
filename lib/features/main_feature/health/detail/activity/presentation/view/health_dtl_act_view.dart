@@ -24,7 +24,7 @@ class HealthDtlActView extends ConsumerStatefulWidget{
   ConsumerState<ConsumerStatefulWidget> createState() => _HealthDtlActViewState();
 }
 class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
-  static const int _initialPage = 10000;
+  int _initialPage = 10000;
   late final PageController _pageController;
 
   @override
@@ -60,30 +60,43 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
     return Scaffold(
       //actions에 달력 아이콘을 넣어서 주간 월간 선택 달력을 띄워야함
       appBar: CustomAppBar(
+        backgroundColor: Colors.white,
         title: '활동 상세',
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          _dateSelector(state, ref, _movePrevDay, _moveNextDay),
-          Gap(20.h),
-          Expanded(
-            child: PageView.builder(
-              controller: _pageController,
-              onPageChanged: (page){
-                // WidgetsBinding.instance.addPostFrameCallback((_){
-                //   // if(mounted) _pageController.jumpToPage(_initialPage);
-                // });
-              },
+      body: Container(
+        color: Color(0xfff9fafb),
+        child: Column(
+         crossAxisAlignment: .center,
+         children: [
+           Gap(20.h),
+           _dateSelector(state, ref, _movePrevDay, _moveNextDay),
+           Gap(20.h),
+           Expanded(
+             child: PageView.builder(
+               controller: _pageController,
+               onPageChanged: (page){
+                   int diff =(page - _initialPage).sign;
+                   final viewmodel = ref.read(actDtlViewModelProvider.notifier);
 
-              itemBuilder: (context,idx){
-                return _infoSection(state);
-              },
-            ),
-          )
-        ],
-      )
-      ,
+                   if(diff == 0) return;
+
+                   _initialPage = page;
+
+                   if(state.isWeekly){
+                     viewmodel.changeMonth(moveWeek:  diff);
+                   }else{
+                     viewmodel.changeMonth(moveMonth: diff);
+                   }
+               },
+
+               itemBuilder: (context,idx){
+                 return _infoSection(state);
+               },
+             ),
+           )
+         ],
+       ),
+      ),
     );
   }
 
@@ -110,7 +123,6 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
       ) {
     //주간 월간 선택여부에 따라 달라져야함
     //mdstr 주간 x월 / 월간 x월
-    //eStr 주간 x주차 / none
     final mdStr = TimeUtil().monthWeekByFirstMondayRuleToUi(state.selectedDate);
     return Container(
       width: 335.w,
@@ -123,7 +135,7 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 24.w),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: .spaceBetween,
             children: [
               SizedBox(
                 height: 40.h,
@@ -163,6 +175,7 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
       height: 152.h, 
       width: 336.w,
       decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
             begin: AlignmentGeometry.topLeft,
               end: AlignmentGeometry.bottomRight,
@@ -176,13 +189,15 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
         padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 24.w),
         child: SizedBox.expand(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: .spaceBetween,
+
             children: [
               SizedBox(
                 width: double.infinity,
                 height: 72.h,
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisAlignment: .spaceBetween,
+                  crossAxisAlignment: .start,
                   children: [
                     //활동 점수 container
                     SizedBox(
@@ -206,9 +221,9 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
                     //평가 문장 컨테이너
                     Container(
                       width: 124.w, height: 32.h,
-                      color: Colors.white.withValues(alpha: 0.20),
+                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: Colors.white.withValues(alpha: 0.20)),
                       child: Center(
-                        child: Text(state.mainScoreEvaluation, style: HomeTheme.leadingTextStyle,)
+                        child: Text(state.mainScoreEvaluation, style: HomeTheme.leadingTextStyle.copyWith(color: Colors.white),)
                       ),
                     )
 
@@ -219,14 +234,14 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
                 width: double.infinity,
                 height: 20.h,
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: .start,
+                  mainAxisAlignment: .start,
                   children: [
                     //삼항연산자 중첩 >, =, < 을 통한 아이콘 분기
-                    Icon(Icons.arrow_upward_rounded),
+                    Icon(Icons.arrow_upward_rounded, color: Colors.white,),
                     Gap(6.w),
                     //삼항연산자 2개는 너무한데.. if문을 사용은 못하고 state에서 처리하기에는 property가 많아질거 같고 고민이구만
-                    Text(state.evaluationPrev, style: GlobalTheme.leadCustomText)
+                    Text(state.evaluationPrev, style: GlobalTheme.leadCustomText.copyWith(color: Colors.white),)
                   ],
                 ),
               )
@@ -247,20 +262,20 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 20.h, vertical: 20.w),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: .spaceBetween,
           children: [
             SizedBox(
               height: 28.h,
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisAlignment: .spaceBetween,
+                crossAxisAlignment: .stretch,
                 children: [
-                  Text(state.isWeekly ? '주간' : '월간', style: HomeTheme.titleTextStyle),
+                  Text(state.isWeekly ? '주간 활동량' : '월간 활동량', style: HomeTheme.titleTextStyle),
                   SizedBox(
-                    width: 210.w,
+                    width: 200.w,
                     height: 28.h,
                     child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisAlignment: .spaceBetween,
                       children: [
                         Container(
                           width: 60.w,
@@ -334,7 +349,7 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
 
             SizedBox(
               height: 240.h,
-              child: state.isWeekly ? ActWeeklyGraphView(weeklyData: state.actDatas.weeklyData[selectWeekOrMonth.week -1], option: state.selectedOption,)
+              child: state.isWeekly ? ActWeeklyGraphView(weeklyData: state.actDatas.weeklyData[selectWeekOrMonth.week], option: state.selectedOption,)
                   : ActMontlyGraphView(montlyData: state.actDatas,option: state.selectedOption,),
             )
 
@@ -354,9 +369,9 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
     Fourth<String, String, String, bool> totalWriting = Fourth('', '', '', false);
 
     if(state.isWeekly){
-
-      final weeklyData = state.actDatas.weeklyData[weekOrMonth.week -1];
-      final prevWeeklyData = state.actDatas.weeklyData[weekOrMonth.week -2];
+      print('readWeek = ${weekOrMonth.week}');
+      final weeklyData = state.actDatas.weeklyData[weekOrMonth.week];
+      final prevWeeklyData = state.actDatas.weeklyData[weekOrMonth.week -1];
       int diffStepCnt = (weeklyData.weeklyAvgStepCnt - prevWeeklyData.weeklyAvgStepCnt);
       print(weeklyData.weeklyAvgStepCnt);
       print(prevWeeklyData.weeklyAvgStepCnt);
@@ -364,7 +379,7 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
 
       totalStep = Fourth('이번 주 총 걸음수', weeklyData.weeklyTotStepCnt.toString() , '평균 ${weeklyData.weeklyAvgStepCnt}보/일', false);
       totalCnt = Fourth('하루 평균 걸음수', weeklyData.weeklyAvgStepCnt.toString() , '${prevPercent}%', prevPercent < 0 ? false : true );
-      totalActiveDay = Fourth('가장 활동적인 날', weeklyData.weeklyMostActDay == null ?'데이터없음':TimeUtil.yyyyMMddToMdForDate(weeklyData.weeklyMostActDay!) , '${weeklyData.actDailyData.firstWhere((e) => e.measrueDt == weeklyData.weeklyMostActDay).stepCnt}보', false);
+      totalActiveDay = Fourth('가장 활동적인 날', weeklyData.weeklyMostActDay == null ?'데이터없음':TimeUtil.yyyyMMddToMdForDate(weeklyData.weeklyMostActDay!) , '${weeklyData.actDailyData.isEmpty ? 0 : weeklyData.actDailyData.firstWhere((e) => e.measrueDt == weeklyData.weeklyMostActDay).stepCnt}보', false);
       totalWriting = Fourth('연속 활동 기록', '${weeklyData.weeklyContinuousCnt.toString()}일 연속' , '7000보 이상', false);
     }else{
       final montlyData = state.actDatas;
@@ -381,17 +396,17 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
       height: 224.h,
       width: 336.w,
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: .spaceBetween,
         children: [
           Row(
-            // crossAxisAlignment: .stretch,
+            mainAxisAlignment: .spaceBetween,
             children: [
               _gridSummaryElement(totalStep.first, totalStep.second, totalStep.third, totalStep.fourth),
               _gridSummaryElement(totalCnt.first, totalCnt.second, totalCnt.third, totalCnt.fourth)
             ],
           ),
           Row(
-            // crossAxisAlignment: .stretch,
+            mainAxisAlignment: .spaceBetween,
             children: [
               _gridSummaryElement(totalActiveDay.first, totalActiveDay.second, totalActiveDay.third, totalActiveDay.fourth),
               _gridSummaryElement(totalWriting.first, totalWriting.second, totalWriting.third, totalWriting.fourth)
@@ -418,11 +433,14 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
               )
           )
       );
+    }else{
+      leadingArea.add(Text(leadingText, style: HomeTheme.leadingTextStyle.copyWith(color: Color(0xff9ca3af))));
     }
     return Container(
       width: 161.5.w,
       height: 108.h,
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(12),),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16), color: Colors.white),
       child: Padding(
           padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
           child: Column(
@@ -432,9 +450,8 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
               Text(title),
               Text(summary, style: FeatureTheme.hrScoreText,),
               Row(
-                children: [
-
-                ]
+                mainAxisAlignment: .spaceBetween,
+                children: leadingArea
               )
             ]
           ),
