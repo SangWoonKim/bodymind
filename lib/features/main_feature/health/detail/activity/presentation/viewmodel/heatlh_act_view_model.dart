@@ -29,8 +29,8 @@ class ActDtlState {
     this.actDatas,
     this.prevActDatas,
     this.selectedDate, {
-    this.selectedOption = ActGraphSelection.COUNT,
-        this.evaluationPrev =' 데이터 없음'
+      required this.selectedOption,
+        required this.evaluationPrev
   });
 
   factory ActDtlState.initial() =>
@@ -48,7 +48,7 @@ class ActDtlState {
           DateTime.now(),
           DateTime.now(),
           0
-      ), DateTime.now());
+      ), DateTime.now(), selectedOption: ActGraphSelection.COUNT, evaluationPrev: '데이터 없음');
 
   ActDtlState copyWith({
     int? mainScore,
@@ -66,7 +66,7 @@ class ActDtlState {
         mainScoreEvaluation ?? this.mainScoreEvaluation,
         actDatas ?? this.actDatas,
         prevActDatas ?? this.prevActDatas,
-        selectedDate ?? this.selectedDate);
+        selectedDate ?? this.selectedDate, selectedOption: selectedOption ?? this.selectedOption, evaluationPrev: evaluationPrev ?? this.evaluationPrev);
   }
 }
 
@@ -76,10 +76,15 @@ class HealthActViewModel extends Notifier<ActDtlState> {
   @override
   ActDtlState build() {
     _actUsecase = ref.read(actDtlUsecase);
-    Future.microtask(() => _loadActData(DateTime.now()));
+    Future.microtask(() => initialize(DateTime.now()));
     return ActDtlState.initial();
   }
 
+  Future<void> initialize(DateTime initDate) async{
+    await _loadActData(initDate);
+    final weekInt = TimeUtil().monthWeekByFirstMondayRuleToUi(initDate).week;
+    _calculatedWeekScore(state.actDatas.weeklyData[weekInt], state.actDatas.weeklyData[weekInt -1]);
+  }
 
   Future<void> _loadActData(DateTime requestDate) async{
     final loadMonthRange = TimeUtil().buildMonthWeekRanges(requestDate.year, requestDate.month);
@@ -125,11 +130,14 @@ class HealthActViewModel extends Notifier<ActDtlState> {
 
   void _calculatedWeekScore(ActWeekDto targetWeek, ActWeekDto prevWeek) {
     final targetWeekScore = _createScore(targetWeek);
-    final prevWeekScore = _createScore(targetWeek);
-    final different = (targetWeekScore - prevWeekScore) / prevWeekScore;
+    final prevWeekScore = _createScore(prevWeek);
+    final different = targetWeekScore - prevWeekScore;
 
-    final mainScoreEvaluation = '전주 대비 $different ${different > 0 ? '증가' : '감소'}' ;
-    state = state.copyWith(mainScoreEvaluation: mainScoreEvaluation, mainScore: targetWeekScore, evaluationPrev: ' $different%');
+    print('targetWeekScore = ${targetWeekScore}');
+    print('prevWeekScore = ${prevWeekScore}');
+    print('different = ${different}');
+    final evaluationPrev = '전주 대비 ${different}% ${different > 0 ? '증가' : '감소'}' ;
+    state = state.copyWith(mainScoreEvaluation: '안정적인 편이에요', mainScore: targetWeekScore, evaluationPrev: ' $evaluationPrev');
   }
 
   int _createScore(ActWeekDto data){
@@ -138,9 +146,11 @@ class HealthActViewModel extends Notifier<ActDtlState> {
     if(data.actDailyData.isEmpty){
       return 0;
     }
-    return data.actDailyData.where((e) => e.stepCnt != 0).toList().map((e) {
+    int nonZeroCnt = 0;
+    int sumScore = data.actDailyData.where((e) => e.stepCnt != 0).toList().map((e) {
       final dataYmd = e.measrueDt;
       int score = 0;
+      nonZeroCnt++;
       if(TimeUtil.dateTimeToyymmdd(now) == TimeUtil.dateTimeToyymmdd(dataYmd)){
         score = HomeScoreUtil().activityScoreUpToNow(hour: now.hour, min: now.minute, steps: e.stepCnt, distance: e.distance, weight: 70, height: 170, age: 32, isMale: true);
       }else{
@@ -148,6 +158,15 @@ class HealthActViewModel extends Notifier<ActDtlState> {
       }
       return score;
     }).reduce((a,b) => a+b);
+
+    if(nonZeroCnt == 0 || sumScore == 0) return 0;
+    return (sumScore / nonZeroCnt).round();
   }
+
+  void selectGraphView(ActGraphSelection selected){
+    state = state.copyWith(selectedOption: selected);
+  }
+
+
 
 }

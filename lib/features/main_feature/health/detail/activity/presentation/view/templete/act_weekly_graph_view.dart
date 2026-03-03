@@ -1,6 +1,7 @@
 import 'package:bodymind/features/main_feature/health/detail/activity/presentation/viewmodel/heatlh_act_view_model.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../domain/entity/act_daily_dto.dart';
 import '../../../domain/entity/act_week_dto.dart';
@@ -33,7 +34,7 @@ class ActWeeklyGraphView extends StatelessWidget {
         selectObj = e.stepCnt.toInt();
       }
       return selectObj;
-    }).reduce((a,b) => a > b ? a : b ).clamp(0, 100000).toDouble();
+    }).reduce((a,b) => a > b ? a : b ).clamp(0, 100000).toDouble() + 1000;
 
     return BarChart(BarChartData(
       maxY: maxY.toDouble(),
@@ -47,14 +48,14 @@ class ActWeeklyGraphView extends StatelessWidget {
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              interval: 2000,
+              interval: (((maxY / 4) / 1000).round()) * 1000,
               reservedSize: 36,
               getTitlesWidget: (value, meta) => Text(value.toInt().toString()),),
           ),
           bottomTitles: AxisTitles(
               sideTitles: SideTitles(
                   showTitles: true,
-                  getTitlesWidget: xWeekTitle)
+                  getTitlesWidget: _xWeekTitle)
           )
       ),
       barGroups: barDatas(option),
@@ -90,15 +91,9 @@ class ActWeeklyGraphView extends StatelessWidget {
       }
     });
     //반복후 없을 경우 추가 생성
-    final modDay = start.add(Duration(days: 6)).difference(dailyData.last.measrueDt).inDays;
-
     if(dailyData.length != 7){
-
       final emptylen = 7 -dailyData.length;
-      print('dailyData len = ${dailyData.length}');
-      print('add len = ${emptylen}');
       for(int i = 0; i < emptylen; i++){
-        print('empty add');
         dailyData.add(ActDailyDto(0, 0, 0, DateTime(start.year, start.month, start.day + i)));
       }
     }
@@ -106,7 +101,16 @@ class ActWeeklyGraphView extends StatelessWidget {
     //for문 중간에 색상 변경해야함(오늘 데이터일 경우와 어제 데이터일 경우)
       case ActGraphSelection.COUNT:
         for(int x = 0; x < dailyData.length; x++){
-          result.add(BarChartGroupData(x: x, barRods: [BarChartRodData(toY: dailyData[x].stepCnt.toDouble(), color: Colors.deepPurpleAccent)]));
+          result.add(BarChartGroupData(
+              x: x,
+              barRods: [BarChartRodData(
+                  toY: dailyData[x].stepCnt.toDouble(),
+                  color: Colors.deepPurpleAccent,
+                  width: 30.w,
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12))
+              )
+              ]
+          ));
         }
         break;
       case ActGraphSelection.DISTANCE:
@@ -123,7 +127,7 @@ class ActWeeklyGraphView extends StatelessWidget {
     return result;
   }
 
-  Widget xWeekTitle(double value, TitleMeta meta){
+  Widget _xWeekTitle(double value, TitleMeta meta){
     Widget weekly;
 
     switch(value.toInt()){

@@ -1,6 +1,8 @@
+import 'package:animated_toggle_switch/animated_toggle_switch.dart';
 import 'package:bodymind/const/theme/global_theme.dart';
 import 'package:bodymind/core/util/fourth.dart';
 import 'package:bodymind/core/widget/cus_appbar.dart';
+import 'package:bodymind/features/main_feature/health/detail/activity/domain/entity/act_week_dto.dart';
 import 'package:bodymind/features/main_feature/health/detail/activity/presentation/provider/health_act_dtl_provider.dart';
 import 'package:bodymind/features/main_feature/health/detail/activity/presentation/view/enum/act_graph_option.dart';
 import 'package:bodymind/features/main_feature/health/detail/activity/presentation/view/templete/act_montly_graph_view.dart';
@@ -69,6 +71,8 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
          crossAxisAlignment: .center,
          children: [
            Gap(20.h),
+           _monthWeekSelector(state,ref),
+           Gap(20.h),
            _dateSelector(state, ref, _movePrevDay, _moveNextDay),
            Gap(20.h),
            Expanded(
@@ -90,7 +94,7 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
                },
 
                itemBuilder: (context,idx){
-                 return _infoSection(state);
+                 return _infoSection(state,ref);
                },
              ),
            )
@@ -100,17 +104,48 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
     );
   }
 
-  Widget _infoSection(ActDtlState state){
+  Widget _infoSection(ActDtlState state, WidgetRef ref){
     return state.actDatas.weeklyData.isEmpty ? CircularProgressIndicator(): SingleChildScrollView(
       child: Column(
         children: [
           _evaluationWidget(state),
           Gap(20.h),
-          _actGraph(state),
+          _actGraph(state, ref),
           Gap(20.h),
           _gridSummaryInfo(state)
         ],
       ),
+    );
+  }
+
+  Widget _monthWeekSelector(ActDtlState state, WidgetRef ref){
+    return AnimatedToggleSwitch<bool>.size(
+      textDirection: TextDirection.rtl,
+      current: state.isWeekly,
+      values: const [false, true],
+      iconOpacity: 1,
+      indicatorSize: Size((336.w - 8.w) / 2, 48.h - 8.w),
+      iconBuilder: (value) {
+        return value == true ? Text('주간', style: HomeTheme.suggestTextStyle) : Text('월간', style: HomeTheme.suggestTextStyle);
+      },
+      borderWidth: 4.w,
+      iconAnimationType: AnimationType.onHover,
+      style: ToggleStyle(
+        borderColor: Colors.transparent,
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      styleBuilder: (i) { return i == true
+          ? ToggleStyle(backgroundColor: Color(0xfff3f4f6), indicatorColor: Colors.white )
+            : ToggleStyle(backgroundColor: Color(0xfff3f4f6), indicatorColor: Colors.white);
+        },
+      onChanged: (i) => setState(() {
+        if(i){
+          ref.read(actDtlViewModelProvider.notifier).changeMonth(moveWeek: 0);
+        }else{
+          ref.read(actDtlViewModelProvider.notifier).changeMonth(moveMonth: 0);
+        }
+
+      } ),
     );
   }
 
@@ -201,14 +236,14 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
                   children: [
                     //활동 점수 container
                     SizedBox(
-                      width: 60.h,
+                      width: 90.h,
                       height: 72.h,
                       child: RichText(
                         textAlign: TextAlign.start,
                         text: TextSpan(
                           children: [
                             TextSpan(
-                              text: '활동점수', style: HomeTheme.suggestTextStyle
+                              text: '활동점수\n', style: HomeTheme.suggestTextStyle
                             ),
                             TextSpan(
                               text: state.mainScore.toString(), style: FeatureTheme.actMainScoreText
@@ -253,7 +288,7 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
   }
 
 
-  Widget _actGraph(ActDtlState state){
+  Widget _actGraph(ActDtlState state, WidgetRef ref){
     final selectWeekOrMonth = TimeUtil().monthWeekByFirstMondayRuleToUi(state.selectedDate);
     return Container(
       width: 336.w,
@@ -288,12 +323,17 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
                             Color(0xffF3F4F6)
                           ),
                           child: Center(
-                            child: Text('걸음수',
-                              style: HomeTheme.leadingTextStyle.copyWith(
-                                  color: state.selectedOption == ActGraphSelection.COUNT ? Color(0xff4f46e5)
-                                      : state.selectedOption == ActGraphSelection.CALORIE ? Color(0xff4B5563)
-                                      : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xff4B5563)
-                                      : Color(0xff4B5563)
+                            child: InkWell(
+                              onTap: (){
+                                ref.read(actDtlViewModelProvider.notifier).selectGraphView(ActGraphSelection.COUNT);
+                              },
+                              child: Text('걸음수',
+                                style: HomeTheme.leadingTextStyle.copyWith(
+                                    color: state.selectedOption == ActGraphSelection.COUNT ? Color(0xff4f46e5)
+                                        : state.selectedOption == ActGraphSelection.CALORIE ? Color(0xff4B5563)
+                                        : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xff4B5563)
+                                        : Color(0xff4B5563)
+                                ),
                               ),
                             ),
                           ),
@@ -308,13 +348,18 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
                                   : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xffF3F4F6) :
                               Color(0xffF3F4F6)
                           ),
-                          child: Center(
-                            child: Text('칼로리',
-                              style: HomeTheme.leadingTextStyle.copyWith(
-                                  color: state.selectedOption == ActGraphSelection.COUNT ? Color(0xff4B5563)
-                                      : state.selectedOption == ActGraphSelection.CALORIE ? Color(0xff4f46e5)
-                                      : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xff4B5563)
-                                      : Color(0xff4B5563)
+                          child: InkWell(
+                            onTap: (){
+                              ref.read(actDtlViewModelProvider.notifier).selectGraphView(ActGraphSelection.CALORIE);
+                            },
+                            child: Center(
+                              child: Text('칼로리',
+                                style: HomeTheme.leadingTextStyle.copyWith(
+                                    color: state.selectedOption == ActGraphSelection.COUNT ? Color(0xff4B5563)
+                                        : state.selectedOption == ActGraphSelection.CALORIE ? Color(0xff4f46e5)
+                                        : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xff4B5563)
+                                        : Color(0xff4B5563)
+                                ),
                               ),
                             ),
                           ),
@@ -329,13 +374,18 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
                                   : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xffEEF2FF)
                                   : Color(0xffF3F4F6)
                           ),
-                          child: Center(
-                            child: Text('거리',
-                              style: HomeTheme.leadingTextStyle.copyWith(
-                                  color: state.selectedOption == ActGraphSelection.COUNT ? Color(0xff4B5563)
-                                      : state.selectedOption == ActGraphSelection.CALORIE ? Color(0xff4B5563)
-                                      : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xff4f46e5)
-                                      : Color(0xff4B5563)
+                          child: InkWell(
+                            onTap: (){
+                              ref.read(actDtlViewModelProvider.notifier).selectGraphView(ActGraphSelection.DISTANCE);
+                            },
+                            child: Center(
+                              child: Text('거리',
+                                style: HomeTheme.leadingTextStyle.copyWith(
+                                    color: state.selectedOption == ActGraphSelection.COUNT ? Color(0xff4B5563)
+                                        : state.selectedOption == ActGraphSelection.CALORIE ? Color(0xff4B5563)
+                                        : state.selectedOption == ActGraphSelection.DISTANCE ? Color(0xff4f46e5)
+                                        : Color(0xff4B5563)
+                                ),
                               ),
                             ),
                           ),
@@ -383,12 +433,42 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
       totalWriting = Fourth('연속 활동 기록', '${weeklyData.weeklyContinuousCnt.toString()}일 연속' , '7000보 이상', false);
     }else{
       final montlyData = state.actDatas;
-      final prevMontlyData = state.actDatas;
-      final prevPercent = (montlyData.montlyAvgStepCnt - prevMontlyData.montlyAvgStepCnt ~/ prevMontlyData.montlyAvgStepCnt).round();
+      final prevMontlyData = state.prevActDatas;
+      int diffStepCnt = (montlyData.montlyAvgStepCnt - prevMontlyData.montlyAvgStepCnt);
+      final prevPercent = diffStepCnt == 0 ? 0 : (diffStepCnt ~/ (prevMontlyData.montlyAvgStepCnt == 0 ? 1 : prevMontlyData.montlyAvgStepCnt)).round();
+
+      final temp = montlyData.weeklyData.isEmpty ? List<ActWeekDto>.empty(growable: true) : montlyData.weeklyData;
+      final monthStartDate = TimeUtil().monthWeekByFirstMondayRuleToUi(state.selectedDate).weekStart;
+
+      final filteredActDay = temp.map((e) {
+        if(e.weeklyMostActDay != null){
+
+          if(e.weeklyMostActDay!.isAfter(monthStartDate) || e.weeklyMostActDay!.compareTo(monthStartDate) == 0){
+            return e;
+          }
+        }
+      }).toList();
+
+      final filteredMostActDay = filteredActDay.where((e) => e != null).map((e) => e?.weeklyMostActDay).reduce((a,b) {
+        if(a!.isAfter(b!)){
+          return a;
+        }
+        return b;
+      });
+      final mostDay = temp.firstWhere(
+              (e) => e.weeklyMostActDay == filteredMostActDay)
+          .actDailyData.firstWhere(
+              (e) => e.measrueDt == filteredMostActDay);
 
       totalStep = Fourth('이번 달 총 걸음수', montlyData.montlyTotStepCnt.toString() , '평균 ${montlyData.montlyAvgStepCnt}보/일', false);
-      totalCnt = Fourth('주간 평균 걸음수', montlyData.montlyAvgStepCnt.toString() , '${prevPercent}%', prevPercent < 0 ? false : true );
-      totalActiveDay = Fourth('가장 활동적인 날', TimeUtil.yyyyMMddToMdString(montlyData.montlyMostActDay.toString()) , '${montlyData.weeklyData.firstWhere((e) => e.weeklyMostActDay == montlyData.montlyMostActDay).actDailyData.firstWhere((e) => e.measrueDt== montlyData.montlyMostActDay)}보', false);
+      totalCnt = Fourth('월간 평균 걸음수', montlyData.montlyAvgStepCnt.toString() , '${prevPercent}%', prevPercent < 0 ? false : true );
+      print('montlyData len = ${montlyData.weeklyData.length}');
+      print('mostActDay = ${montlyData.montlyMostActDay}');
+      totalActiveDay = Fourth('가장 활동적인 날', montlyData.montlyMostActDay == null ? '데이터 없음' : TimeUtil.yyyyMMddToMdForDate(mostDay.measrueDt) ,
+          '${filteredMostActDay == null ? 0 : temp.firstWhere(
+              (e) => e.weeklyMostActDay == mostDay.measrueDt)
+          .actDailyData.firstWhere(
+              (e) => e.measrueDt== mostDay.measrueDt).stepCnt}보', false);
       totalWriting = Fourth('연속 활동 기록', '${montlyData.montlyContinuousCnt.toString()}일 연속' , '7000보 이상', false);
     }
 

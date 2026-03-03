@@ -7,6 +7,8 @@ class ActWeekDto {
   final DateTime weeklyMondayDate;
   final DateTime? weeklyMostActDay;
   final int weeklyContinuousCnt;
+  final double weeklyTotDistance;
+  final double weeklyTotCalorie;
 
   ActWeekDto(
       this.actDailyData,
@@ -14,7 +16,9 @@ class ActWeekDto {
       this.weeklyTotStepCnt,
       this.weeklyMondayDate,
       this.weeklyMostActDay,
-      this.weeklyContinuousCnt
+      this.weeklyContinuousCnt,
+      this.weeklyTotDistance,
+      this.weeklyTotCalorie
       );
 
 }

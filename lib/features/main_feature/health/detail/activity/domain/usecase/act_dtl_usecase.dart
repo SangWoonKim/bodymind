@@ -71,15 +71,17 @@ class ActDtlUsecase {
       final zeroFilterLst = weeklyData.where((e) => e.stepCnt != 0).toList();
 
       //연속 기록 산출
-      int continuousDays = 0;
+      int continuousDays = 1;
       int acceptWeeklyContinuousDays = 0;
 
       if(zeroFilterLst.isNotEmpty){
         zeroFilterLst.reduce((a,b) {
-          final diffDate = a.measrueDt.difference(b.measrueDt).inDays;
+          final diffDate = b.measrueDt.difference(a.measrueDt).inDays;
+          print('continue diffday = ${diffDate}');
           if(diffDate > 0 && diffDate < 2){
             continuousDays += 1;
           }else{
+            acceptWeeklyContinuousDays = continuousDays;
             continuousDays = 0;
           }
 
@@ -91,9 +93,9 @@ class ActDtlUsecase {
       }
 
       if(totalStep == 0 || zeroFilterLst.isEmpty == 0){
-        monthlyData.add(ActWeekDto(weeklyData, 0, totalStep, e.start, mostDay?.measrueDt, continuousDays));
+        monthlyData.add(ActWeekDto(weeklyData, 0, totalStep, e.start, mostDay?.measrueDt, continuousDays, totalDistance, totalCalorie));
       }else{
-        monthlyData.add(ActWeekDto(weeklyData, (totalStep/zeroFilterLst.length).round(), totalStep, e.start, mostDay?.measrueDt, continuousDays));
+        monthlyData.add(ActWeekDto(weeklyData, (totalStep/zeroFilterLst.length).round(), totalStep, e.start, mostDay?.measrueDt, continuousDays, totalDistance, totalCalorie));
       }
 
 
