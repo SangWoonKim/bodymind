@@ -24,7 +24,7 @@ class ActMontlyGraphView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    montlyData = ActMonthDto(montlyData.weeklyData.skip(1).toList(), 0, 0, DateTime.now(), null, 0);
+    montlyData = ActMonthDto(montlyData.weeklyData.skip(1).toList(), 0, 0, montlyData.weeklyData[1].weeklyMondayDate, null, 0);
     final maxY = montlyData.weeklyData.isEmpty ?
     10000 : montlyData.weeklyData.map((e){
       int selectObj = 0;

@@ -423,19 +423,20 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
       final weeklyData = state.actDatas.weeklyData[weekOrMonth.week];
       final prevWeeklyData = state.actDatas.weeklyData[weekOrMonth.week -1];
       int diffStepCnt = (weeklyData.weeklyAvgStepCnt - prevWeeklyData.weeklyAvgStepCnt);
-      print(weeklyData.weeklyAvgStepCnt);
-      print(prevWeeklyData.weeklyAvgStepCnt);
-      final prevPercent = diffStepCnt == 0 ? 0 : (diffStepCnt ~/ (prevWeeklyData.weeklyAvgStepCnt == 0 ? 1 : prevWeeklyData.weeklyAvgStepCnt)).round();
+      final prevPercent = diffStepCnt == 0 ? 0 : ((diffStepCnt / (prevWeeklyData.weeklyAvgStepCnt == 0 ? 1 : prevWeeklyData.weeklyAvgStepCnt)) * 100).round();
+      print('diffStepCnt = ${diffStepCnt}');
+      print('prevWeeklyData.weeklyAvgStepCnt = ${prevWeeklyData.weeklyAvgStepCnt}');
+      print('prevPercent = ${prevPercent}');
 
       totalStep = Fourth('이번 주 총 걸음수', weeklyData.weeklyTotStepCnt.toString() , '평균 ${weeklyData.weeklyAvgStepCnt}보/일', false);
-      totalCnt = Fourth('하루 평균 걸음수', weeklyData.weeklyAvgStepCnt.toString() , '${prevPercent}%', prevPercent < 0 ? false : true );
+      totalCnt = Fourth('하루 평균 걸음수', weeklyData.weeklyAvgStepCnt.toString() , '${prevPercent}%', true );
       totalActiveDay = Fourth('가장 활동적인 날', weeklyData.weeklyMostActDay == null ?'데이터없음':TimeUtil.yyyyMMddToMdForDate(weeklyData.weeklyMostActDay!) , '${weeklyData.actDailyData.isEmpty ? 0 : weeklyData.actDailyData.firstWhere((e) => e.measrueDt == weeklyData.weeklyMostActDay).stepCnt}보', false);
       totalWriting = Fourth('연속 활동 기록', '${weeklyData.weeklyContinuousCnt.toString()}일 연속' , '7000보 이상', false);
     }else{
       final montlyData = state.actDatas;
       final prevMontlyData = state.prevActDatas;
       int diffStepCnt = (montlyData.montlyAvgStepCnt - prevMontlyData.montlyAvgStepCnt);
-      final prevPercent = diffStepCnt == 0 ? 0 : (diffStepCnt ~/ (prevMontlyData.montlyAvgStepCnt == 0 ? 1 : prevMontlyData.montlyAvgStepCnt)).round();
+      final prevPercent = diffStepCnt == 0 ? 0 : ((diffStepCnt / (prevMontlyData.montlyAvgStepCnt == 0 ? 1 : prevMontlyData.montlyAvgStepCnt))*100).round();
 
       final temp = montlyData.weeklyData.isEmpty ? List<ActWeekDto>.empty(growable: true) : montlyData.weeklyData;
       final monthStartDate = TimeUtil().monthWeekByFirstMondayRuleToUi(state.selectedDate).weekStart;
@@ -461,7 +462,7 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
               (e) => e.measrueDt == filteredMostActDay);
 
       totalStep = Fourth('이번 달 총 걸음수', montlyData.montlyTotStepCnt.toString() , '평균 ${montlyData.montlyAvgStepCnt}보/일', false);
-      totalCnt = Fourth('월간 평균 걸음수', montlyData.montlyAvgStepCnt.toString() , '${prevPercent}%', prevPercent < 0 ? false : true );
+      totalCnt = Fourth('월간 평균 걸음수', montlyData.montlyAvgStepCnt.toString() , '${prevPercent}%', true );
       print('montlyData len = ${montlyData.weeklyData.length}');
       print('mostActDay = ${montlyData.montlyMostActDay}');
       totalActiveDay = Fourth('가장 활동적인 날', montlyData.montlyMostActDay == null ? '데이터 없음' : TimeUtil.yyyyMMddToMdForDate(mostDay.measrueDt) ,
@@ -500,16 +501,25 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
   Widget _gridSummaryElement(String title , String summary , String leadingText, bool isAvg ){
     List<Widget> leadingArea = List.empty(growable: true);
     if(isAvg){
-      leadingArea.add(SizedBox(
-          height: 16.h,
-          width: 7.5.w,
-          child: Icon(Icons.arrow_upward_rounded,)
-      ));
+      if(leadingText.contains('-')){
+        leadingArea.add(SizedBox(
+            height: 16.h,
+            width: 7.5.w,
+            child: Icon(Icons.arrow_downward_rounded,color: Color(0xffe22e70),)
+        ));
+      }else{
+        leadingArea.add(SizedBox(
+            height: 16.h,
+            width: 7.5.w,
+            child: Icon(Icons.arrow_upward_rounded,color: Color(0xff22c55e),)
+        ));
+      }
+
       leadingArea.add(Gap(4.h));
       leadingArea.add(
           Text(leadingText,
               style: HomeTheme.leadingTextStyle.copyWith(
-                  color: Color(0xff22c55e)
+                  color: leadingText.contains('-') ? Color(0xffe22e70) : Color(0xff22c55e)
               )
           )
       );
@@ -530,7 +540,6 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
               Text(title),
               Text(summary, style: FeatureTheme.hrScoreText,),
               Row(
-                mainAxisAlignment: .spaceBetween,
                 children: leadingArea
               )
             ]

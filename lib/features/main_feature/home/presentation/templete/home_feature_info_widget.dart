@@ -36,45 +36,45 @@ class HomeFeatureInfoWidget extends StatelessWidget {
         )
       ),
       padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: 32.h,
-            width: 66.w,
-            color: Colors.transparent,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Container(
-                  height: 32.h,
-                  width: 32.w,
-                  decoration: BoxDecoration(
-                      color: content.iconColor,
-                      borderRadius: BorderRadius.circular(100)),
-                  child: Center(
-                    child: SvgPicture.asset(content.svgPath,fit: BoxFit.contain,),
+      child: InkWell(
+        onTap: () => context.push(onRoute),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 32.h,
+              width: 66.w,
+              color: Colors.transparent,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Container(
+                    height: 32.h,
+                    width: 32.w,
+                    decoration: BoxDecoration(
+                        color: content.iconColor,
+                        borderRadius: BorderRadius.circular(100)),
+                    child: Center(
+                      child: SvgPicture.asset(content.svgPath,fit: BoxFit.contain,),
+                    ),
                   ),
-                ),
-                Text(content.featureName, style: GlobalTheme.leadCustomText,)
-              ],
+                  Text(content.featureName, style: GlobalTheme.leadCustomText,)
+                ],
+              ),
             ),
-          ),
-          Gap(10.h),
-          Text(featureScore.toString(), style: HomeTheme.featureScoreTextStyle,),
-          Gap(5.h),
-          Text(evaluationSummery, style: HomeTheme.infoTextStyle,),
-          Gap(9.h),
-          GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onTap: () => context.push(onRoute),
-            child: Text('상세보기 >', style: HomeTheme.leadingTextStyle.copyWith(color: content.textColor), ),
-          )
+            Gap(10.h),
+            Text(featureScore.toString(), style: HomeTheme.featureScoreTextStyle,),
+            Gap(5.h),
+            Text(evaluationSummery, style: HomeTheme.infoTextStyle,),
+            Gap(9.h),
+            Text('상세보기 >', style: HomeTheme.leadingTextStyle.copyWith(color: content.textColor)
+            )
 
 
-        ],
+          ],
+        ),
       ),
     );
   }

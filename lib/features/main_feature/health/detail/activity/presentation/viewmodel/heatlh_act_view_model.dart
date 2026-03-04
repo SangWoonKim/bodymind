@@ -7,8 +7,11 @@ import 'package:bodymind/features/main_feature/health/detail/activity/presentati
 import 'package:bodymind/features/main_feature/home/domain/usecase/home_usecase.dart';
 import 'package:bodymind/features/main_feature/home/presentation/viewmodel/injector/home_act_injector.dart';
 import 'package:bodymind/features/main_feature/home/util/home_score_util.dart';
+import 'package:bodymind/features/user/domain/usecase/user_usecase.dart';
+import 'package:bodymind/features/user/presentation/provider/user_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../../../user/domain/entity/user_info.dart';
 import '../provider/health_act_dtl_provider.dart';
 
 class ActDtlState {
@@ -72,15 +75,19 @@ class ActDtlState {
 
 class HealthActViewModel extends Notifier<ActDtlState> {
   late final ActDtlUsecase _actUsecase;
+  late final UserUseCase _userUseCase;
+  UserInfo? _userInfo;
 
   @override
   ActDtlState build() {
     _actUsecase = ref.read(actDtlUsecase);
+    _userUseCase = ref.read(userUseCaseProvider);
     Future.microtask(() => initialize(DateTime.now()));
     return ActDtlState.initial();
   }
 
   Future<void> initialize(DateTime initDate) async{
+    _userInfo ??= await _userUseCase.getUserInfo();
     await _loadActData(initDate);
     final weekInt = TimeUtil().monthWeekByFirstMondayRuleToUi(initDate).week;
     _calculatedWeekScore(state.actDatas.weeklyData[weekInt], state.actDatas.weeklyData[weekInt -1]);
@@ -123,9 +130,6 @@ class HealthActViewModel extends Notifier<ActDtlState> {
       await _loadActData(loadMonthRange);
       state = state.copyWith(isWeekly : false, selectedDate: month);
     }
-
-
-
   }
 
   void _calculatedWeekScore(ActWeekDto targetWeek, ActWeekDto prevWeek) {
@@ -152,9 +156,9 @@ class HealthActViewModel extends Notifier<ActDtlState> {
       int score = 0;
       nonZeroCnt++;
       if(TimeUtil.dateTimeToyymmdd(now) == TimeUtil.dateTimeToyymmdd(dataYmd)){
-        score = HomeScoreUtil().activityScoreUpToNow(hour: now.hour, min: now.minute, steps: e.stepCnt, distance: e.distance, weight: 70, height: 170, age: 32, isMale: true);
+        score = HomeScoreUtil().activityScoreUpToNow(hour: now.hour, min: now.minute, steps: e.stepCnt, distance: e.distance, weight: _userInfo!.weight, height: _userInfo!.height, age: _userInfo!.age, isMale: _userInfo!.gender == 'M' ? true: false);
       }else{
-        score = HomeScoreUtil().activityScoreUpToNow(hour: dataYmd.hour, min: dataYmd.minute, steps: e.stepCnt, distance: e.distance, weight: 70, height: 170, age: 32, isMale: true);
+        score = HomeScoreUtil().activityScoreUpToNow(hour: dataYmd.hour, min: dataYmd.minute, steps: e.stepCnt, distance: e.distance, weight: _userInfo!.weight, height: _userInfo!.height, age: _userInfo!.age, isMale: _userInfo!.gender == 'M' ? true: false);
       }
       return score;
     }).reduce((a,b) => a+b);
