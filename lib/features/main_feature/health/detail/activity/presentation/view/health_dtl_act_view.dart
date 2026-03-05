@@ -184,9 +184,10 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
                 height: 46.h,
                 width: 69.w,
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('${mdStr.month}월', style: FeatureTheme.hrMdText),
-                    Text('${mdStr.week}주차', style: HomeTheme.infoTextStyle),
+                  Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: Text('${mdStr.month}월', style: FeatureTheme.hrMdText))),
+                  Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: Text('${mdStr.week}주차', style: HomeTheme.infoTextStyle))),
                   ],
                 ),
               ),
@@ -397,7 +398,8 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
               ),
             ),
 
-            SizedBox(
+            Container(
+              clipBehavior: Clip.none,
               height: 240.h,
               child: state.isWeekly ? ActWeeklyGraphView(weeklyData: state.actDatas.weeklyData[selectWeekOrMonth.week], option: state.selectedOption,)
                   : ActMontlyGraphView(montlyData: state.actDatas,option: state.selectedOption,),
@@ -429,7 +431,7 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
       print('prevPercent = ${prevPercent}');
 
       totalStep = Fourth('이번 주 총 걸음수', weeklyData.weeklyTotStepCnt.toString() , '평균 ${weeklyData.weeklyAvgStepCnt}보/일', false);
-      totalCnt = Fourth('하루 평균 걸음수', weeklyData.weeklyAvgStepCnt.toString() , '${prevPercent}%', true );
+      totalCnt = Fourth('하루 평균 걸음수', weeklyData.weeklyAvgStepCnt.toString() , '${prevPercent.clamp(-100, 100)}%', true );
       totalActiveDay = Fourth('가장 활동적인 날', weeklyData.weeklyMostActDay == null ?'데이터없음':TimeUtil.yyyyMMddToMdForDate(weeklyData.weeklyMostActDay!) , '${weeklyData.actDailyData.isEmpty ? 0 : weeklyData.actDailyData.firstWhere((e) => e.measrueDt == weeklyData.weeklyMostActDay).stepCnt}보', false);
       totalWriting = Fourth('연속 활동 기록', '${weeklyData.weeklyContinuousCnt.toString()}일 연속' , '7000보 이상', false);
     }else{
@@ -462,7 +464,7 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
               (e) => e.measrueDt == filteredMostActDay);
 
       totalStep = Fourth('이번 달 총 걸음수', montlyData.montlyTotStepCnt.toString() , '평균 ${montlyData.montlyAvgStepCnt}보/일', false);
-      totalCnt = Fourth('월간 평균 걸음수', montlyData.montlyAvgStepCnt.toString() , '${prevPercent}%', true );
+      totalCnt = Fourth('월간 평균 걸음수', montlyData.montlyAvgStepCnt.toString() , '${prevPercent.clamp(-100, 100)}%', true );
       print('montlyData len = ${montlyData.weeklyData.length}');
       print('mostActDay = ${montlyData.montlyMostActDay}');
       totalActiveDay = Fourth('가장 활동적인 날', montlyData.montlyMostActDay == null ? '데이터 없음' : TimeUtil.yyyyMMddToMdForDate(mostDay.measrueDt) ,
@@ -504,18 +506,18 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
       if(leadingText.contains('-')){
         leadingArea.add(SizedBox(
             height: 16.h,
-            width: 7.5.w,
-            child: Icon(Icons.arrow_downward_rounded,color: Color(0xffe22e70),)
+            width: 16.w,
+            child: Icon(Icons.arrow_downward_rounded,color: Color(0xffe22e70), size:16.h,)
         ));
       }else{
         leadingArea.add(SizedBox(
             height: 16.h,
-            width: 7.5.w,
-            child: Icon(Icons.arrow_upward_rounded,color: Color(0xff22c55e),)
+            width: 16.w,
+            child: Icon(Icons.arrow_upward_rounded,color: Color(0xff22c55e), size: 16.h,)
         ));
       }
 
-      leadingArea.add(Gap(4.h));
+      leadingArea.add(SizedBox(width:4.w));
       leadingArea.add(
           Text(leadingText,
               style: HomeTheme.leadingTextStyle.copyWith(
@@ -540,6 +542,7 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
               Text(title),
               Text(summary, style: FeatureTheme.hrScoreText,),
               Row(
+                mainAxisSize: MainAxisSize.min,
                 children: leadingArea
               )
             ]

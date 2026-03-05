@@ -172,9 +172,10 @@ class HomeView extends ConsumerWidget{
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         SizedBox(
-                            height: 36.h,
+                            height: double.infinity,
                             width: 45.w,
                             child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text('어제보다', style: HomeTheme.infoTextStyle,),
                                   Text('3', style: GlobalTheme.leadCustomText)
@@ -183,9 +184,10 @@ class HomeView extends ConsumerWidget{
                         ),
                         VerticalDivider(color: Color(0xfff3f4f6), thickness: 1.w,),
                         SizedBox(
-                          height: 36.h,
+                          height: double.infinity,
                           width: 45.w,
                           child:Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text('주간평균', style: HomeTheme.infoTextStyle,),
                                 Text('74', style: GlobalTheme.leadCustomText,)

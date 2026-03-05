@@ -48,13 +48,14 @@ class ActWeeklyGraphView extends StatelessWidget {
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              interval: (((maxY / 4) / 1000).round()) * 1000,
+              interval: maxY < 10000 ? 10000 : (((maxY / 4) / 1000).round()) * 1000,
               reservedSize: 36,
               getTitlesWidget: (value, meta) => Text(value.toInt().toString()),),
           ),
           bottomTitles: AxisTitles(
               sideTitles: SideTitles(
                   showTitles: true,
+                  reservedSize: 36,
                   getTitlesWidget: _xWeekTitle)
           )
       ),

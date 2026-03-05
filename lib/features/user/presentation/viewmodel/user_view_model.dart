@@ -1,3 +1,4 @@
+import 'package:bodymind/features/splash/presentation/provider/splash_provider.dart';
 import 'package:bodymind/features/user/domain/entity/user_info.dart';
 import 'package:bodymind/features/user/domain/usecase/user_usecase.dart';
 import 'package:bodymind/features/user/presentation/provider/user_provider.dart';
@@ -45,7 +46,6 @@ class UserViewState{
 }
 class UserViewModel extends Notifier<UserViewState>{
   late final UserUseCase _userUseCase;
-  late final PageController _controller;
 
   @override
   UserViewState build() {
@@ -106,6 +106,7 @@ class UserViewModel extends Notifier<UserViewState>{
             gender: state.gender!
         )
     );
+    ref.invalidate(appStartProvider);
 
     context.pushReplacementNamed('home');
   }

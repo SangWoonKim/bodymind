@@ -64,5 +64,6 @@ class CustomTextStyle extends TextStyle{
       fontSize: fontSize,
       leadingDistribution: TextLeadingDistribution.even,
       height: lineHeight / fontSize,
-      letterSpacing: letterSpacing);
+      letterSpacing: letterSpacing
+  );
 }

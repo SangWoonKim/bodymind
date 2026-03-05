@@ -71,8 +71,6 @@ class HomeFeatureInfoWidget extends StatelessWidget {
             Gap(9.h),
             Text('상세보기 >', style: HomeTheme.leadingTextStyle.copyWith(color: content.textColor)
             )
-
-
           ],
         ),
       ),

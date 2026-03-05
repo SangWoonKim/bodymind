@@ -39,7 +39,7 @@ class UserRegisterView extends ConsumerWidget{
            child: GestureDetector(
              onTap: (){
                 if(pageModelState.isComplete){
-                  ref.read(userViewModelProvider.notifier).routeUserPage(context);
+                  ref.read(userViewModelProvider.notifier).insertUserInfo(context);
                 }
              },
              child: Text(pageModelState.isComplete ? '정보입력':'다음',

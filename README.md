@@ -34,9 +34,10 @@ feature
 ## 이슈사항
 - 3월 3일 기준
 - 중간 이슈사항 수정 예정입니다.
-- 초기 실행시 router쪽에서 redirect가 안되는 현상이 있습니다.(원인: isUserRegistered값이 변경되지 않음 - 회원정보 입력시 insert후 해당 상태이 변경이 가능하도록 watch로 작업하여 observing하거나 또는 주입을 통한 갱신 로직 작성 예정) 1순위
+- aos common_mutiple_health 모듈 이슈 수정중입니다. (처음 테스트 해봄 - 날짜 이슈 및 권한, 빈 데이터 생성) 이후 act쪽 빈데이터 생성을 통해 ui 그래프 일치 안되는 현상 수정 예정입니다. 1순위
 - 아직 앱 바쪽은 개발중입니다. 다만 우선순위 밖이라 이후 할 예정입니다. 2순위
 - 운동 기능 개발 3순위
+- 수면 기능 개발 4순위
 
 ## developer info
 email : rlatkddns031@gmail.com
