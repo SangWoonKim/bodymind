@@ -38,7 +38,7 @@ class HomeView extends ConsumerWidget{
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Gap(48.h),
+                    Gap(20.h),
                     titleArea(state),
                     Gap(20.h),
                     summeryArea(state),
@@ -97,6 +97,7 @@ class HomeView extends ConsumerWidget{
 
 
   Widget summeryArea(HomeViewState state){
+    final diffScore = state.totalScore - state.previousScore;
     return Container(
       height: 300.h,
       width: 335.w,
@@ -151,7 +152,7 @@ class HomeView extends ConsumerWidget{
                         style: HomeTheme.titleTextStyle,
                       ),
                       progressStyle: HomeTheme.mainScoreTextStyle,
-                      progress: 0.2,
+                      progress: state.totalScore / 100,
                     )
                 )
               ),
@@ -178,7 +179,7 @@ class HomeView extends ConsumerWidget{
                               mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text('어제보다', style: HomeTheme.infoTextStyle,),
-                                  Text('3', style: GlobalTheme.leadCustomText)
+                                  Text('${diffScore >= 0 ? diffScore : '-$diffScore'}', style: GlobalTheme.leadCustomText.copyWith(color: diffScore >= 0 ? Color(0xff10B981) : Colors.red))
                                 ]
                             )
                         ),
@@ -190,15 +191,13 @@ class HomeView extends ConsumerWidget{
                             mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text('주간평균', style: HomeTheme.infoTextStyle,),
-                                Text('74', style: GlobalTheme.leadCustomText,)
+                                Text('${state.weeklyScore}', style: GlobalTheme.leadCustomText,)
                               ]
                           ),
                         )
                       ],
                     ),
                   )
-
-
             ],
           ),
         ),

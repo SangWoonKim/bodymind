@@ -77,6 +77,16 @@ class ActWeeklyGraphView extends StatelessWidget {
       }
       return result;
     }
+    //7일 데이터 앞부분 빈 데이터 생성
+    if(weeklyData.actDailyData.isNotEmpty){
+      if(weeklyData.weeklyMondayDate.compareTo(weeklyData.actDailyData.first.measrueDt) == -1){
+        final forCnt =weeklyData.actDailyData.first.measrueDt.difference(weeklyData.weeklyMondayDate).inDays;
+        for(int i = 0; i< forCnt; i++){
+          dailyData.add(ActDailyDto(0, 0, 0, DateTime(weeklyData.weeklyMondayDate.year, weeklyData.weeklyMondayDate.month, weeklyData.weeklyMondayDate.day + i)));
+        }
+      }
+    }
+
     //7일 데이터 주입 및 없을 경우 생성
     weeklyData.actDailyData.forEach((e){
       int diffDay = start.difference(e.measrueDt).inDays;

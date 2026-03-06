@@ -15,4 +15,4 @@ final actDtlUsecase = Provider<ActDtlUsecase>((ref){
   return ActDtlUsecase(repo);
 });
 
-final actDtlViewModelProvider = NotifierProvider<HealthActViewModel, ActDtlState>(HealthActViewModel.new);
+final actDtlViewModelProvider = AutoDisposeNotifierProvider<HealthActViewModel, ActDtlState>(HealthActViewModel.new);

@@ -14,6 +14,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 
 import '../../../../../../../core/util/bodymind_core_util.dart';
+import '../../../../../../common_util/action_calendar.dart';
 import '../../../../../home/presentation/theme/home_theme.dart';
 import '../../../util/feature_theme.dart';
 import '../viewmodel/heatlh_act_view_model.dart';
@@ -64,42 +65,67 @@ class _HealthDtlActViewState extends ConsumerState<HealthDtlActView>{
       appBar: CustomAppBar(
         backgroundColor: Colors.white,
         title: '활동 상세',
+        actions: [
+          InkWell(
+            child: Icon(Icons.calendar_month,),
+            onTap: (){
+              final selectedDate = state.selectedDate;
+              ActionCalendar().openActionCalendar(context: context, initialDate: selectedDate, onSelected: (date) {
+                int diffDays = date.difference(selectedDate).inDays;
+
+                if(state.isWeekly){
+                  diffDays = diffDays ~/ 7;
+                  ref.read(actDtlViewModelProvider.notifier).changeMonth(moveWeek: diffDays);
+                }else{
+                  int diffYear = date.year - selectedDate.year;
+                  int diffMonth =  (date.month - selectedDate.month);
+                  diffDays = (diffYear * 12) + diffMonth;
+                  ref.read(actDtlViewModelProvider.notifier).changeMonth(moveMonth: diffDays);
+                }
+
+
+              });
+            },
+          )
+        ],
       ),
-      body: Container(
-        color: Color(0xfff9fafb),
-        child: Column(
-         crossAxisAlignment: .center,
-         children: [
-           Gap(20.h),
-           _monthWeekSelector(state,ref),
-           Gap(20.h),
-           _dateSelector(state, ref, _movePrevDay, _moveNextDay),
-           Gap(20.h),
-           Expanded(
-             child: PageView.builder(
-               controller: _pageController,
-               onPageChanged: (page){
-                   int diff =(page - _initialPage).sign;
-                   final viewmodel = ref.read(actDtlViewModelProvider.notifier);
+      body: SafeArea(
+        child: Container(
+          color: Color(0xfff9fafb),
+          child: Column(
+           crossAxisAlignment: .center,
+           children: [
+             Gap(20.h),
+             _monthWeekSelector(state,ref),
+             Gap(20.h),
+             _dateSelector(state, ref, _movePrevDay, _moveNextDay),
+             Gap(20.h),
+             Expanded(
+               child: PageView.builder(
+                 controller: _pageController,
+                 onPageChanged: (page){
+                     int diff =(page - _initialPage).sign;
+                     final viewmodel = ref.read(actDtlViewModelProvider.notifier);
 
-                   if(diff == 0) return;
+                     if(diff == 0) return;
 
-                   _initialPage = page;
+                     _initialPage = page;
 
-                   if(state.isWeekly){
-                     viewmodel.changeMonth(moveWeek:  diff);
-                   }else{
-                     viewmodel.changeMonth(moveMonth: diff);
-                   }
-               },
+                     if(state.isWeekly){
+                       viewmodel.changeMonth(moveWeek:  diff);
+                     }else{
+                       viewmodel.changeMonth(moveMonth: diff);
+                     }
+                 },
 
-               itemBuilder: (context,idx){
-                 return _infoSection(state,ref);
-               },
-             ),
-           )
-         ],
-       ),
+                 itemBuilder: (context,idx){
+                   return _infoSection(state,ref);
+                 },
+               ),
+             )
+           ],
+         ),
+        ),
       ),
     );
   }

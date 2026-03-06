@@ -73,7 +73,7 @@ class ActDtlState {
   }
 }
 
-class HealthActViewModel extends Notifier<ActDtlState> {
+class HealthActViewModel extends AutoDisposeNotifier<ActDtlState> {
   late final ActDtlUsecase _actUsecase;
   late final UserUseCase _userUseCase;
   UserInfo? _userInfo;

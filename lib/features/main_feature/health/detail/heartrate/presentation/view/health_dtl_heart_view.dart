@@ -1,6 +1,7 @@
 import 'package:bodymind/const/theme/global_theme.dart';
 import 'package:bodymind/core/util/bodymind_core_util.dart';
 import 'package:bodymind/core/widget/cus_appbar.dart';
+import 'package:bodymind/features/common_util/action_calendar.dart';
 import 'package:bodymind/features/main_feature/health/detail/heartrate/presentation/enum/health_dtl_heart_summary.dart';
 import 'package:bodymind/features/main_feature/health/detail/heartrate/presentation/view/templete/heart_dtl_graph.dart';
 import 'package:bodymind/features/main_feature/health/detail/heartrate/presentation/view/templete/heart_dtl_templete.dart';
@@ -64,7 +65,19 @@ class _HealthDtlHeartViewState extends ConsumerState<HealthDtlHeartView> {
     final heartDtlState = ref.watch(hrDtlViewModelProvider);
 
     return Scaffold(
-      appBar: CustomAppBar(backgroundColor: Colors.white, title: '심박 상세'),
+      appBar: CustomAppBar(backgroundColor: Colors.white, title: '심박 상세', actions: [
+        InkWell(
+          child: Icon(Icons.calendar_month,),
+          onTap: (){
+            final selectedDate = TimeUtil.yyyyMMddToDateTime(heartDtlState.yyyyMMdd);
+            ActionCalendar().openActionCalendar(context: context, initialDate: selectedDate, onSelected: (date) {
+              final diffDays = date.difference(selectedDate).inDays;
+                ref.read(hrDtlViewModelProvider.notifier).loadHrData(diffDays);
+            });
+          },
+        )
+
+      ],),
       body: Container(
         width: double.infinity,
         decoration: const BoxDecoration(
@@ -89,9 +102,9 @@ class _HealthDtlHeartViewState extends ConsumerState<HealthDtlHeartView> {
                   final step = diff > 0 ? 1 : -1;
                   ref.read(hrDtlViewModelProvider.notifier).loadHrData(step);
 
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (mounted) _pageController.jumpToPage(_initialPage);
-                  });
+
+                  if (mounted) _pageController.jumpToPage(_initialPage);
+
                 },
 
                 itemBuilder: (context, index) {
@@ -138,9 +151,10 @@ class _HealthDtlHeartViewState extends ConsumerState<HealthDtlHeartView> {
                 height: 46.h,
                 width: 69.w,
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(mdStr, style: FeatureTheme.hrMdText),
-                    Text(eStr, style: HomeTheme.infoTextStyle),
+                    Expanded(child: FittedBox(child: Text(mdStr, style: FeatureTheme.hrMdText),)),
+                    Expanded(child: FittedBox(child: Text(eStr, style: HomeTheme.infoTextStyle),))
                   ],
                 ),
               ),

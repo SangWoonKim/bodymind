@@ -26,7 +26,7 @@ class HeartDtlState{
 
 }
 
-class HeartDtlViewModel extends Notifier<HeartDtlState>{
+class HeartDtlViewModel extends AutoDisposeNotifier<HeartDtlState>{
   late final HeartDtlUsecase _hrUsecase;
   late DateTime _initializedDay;
 

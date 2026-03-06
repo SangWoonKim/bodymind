@@ -33,7 +33,7 @@ class _HomeProgressIndicatorState extends State<HomeProgressIndicator>
     );
 
     _colorTween = controller.drive(
-      ColorTween(begin: Colors.redAccent, end: Colors.greenAccent),
+      ColorTween(begin: Colors.red, end: Colors.lightBlueAccent),
     );
 
     // 처음 값 반영 (초기에는 0일 수도 있음)
@@ -68,10 +68,11 @@ class _HomeProgressIndicatorState extends State<HomeProgressIndicator>
             fit: StackFit.expand,
             children: [
               CircularProgressIndicator(
-                strokeWidth: 10,
+                strokeWidth: 5,
                 value: controller.value,
                 valueColor: _colorTween,
-                backgroundColor: Colors.black,
+                backgroundColor: Colors.grey,
+                strokeCap: StrokeCap.round,
               ),
               Center(
                   child: Column(
@@ -80,9 +81,10 @@ class _HomeProgressIndicatorState extends State<HomeProgressIndicator>
                     children: [
                       widget.evaluation,
                       Gap(5.h),
+
                       Text(
                         '${(controller.value * 100).toInt()}',
-                        style: widget.progressStyle,
+                        style: widget.progressStyle.copyWith(color: _colorTween.value),
                       )
                     ],
                   )),

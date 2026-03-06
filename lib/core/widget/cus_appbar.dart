@@ -1,5 +1,6 @@
 import 'package:bodymind/const/theme/global_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget{
   final Color? backgroundColor;
@@ -12,6 +13,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget{
   @override
   Widget build(BuildContext context) {
    return AppBar(
+     actionsPadding: EdgeInsets.symmetric(horizontal: 16.w),
      title: title != null ? Text(title!, style: GlobalTheme.customText.copyWith(color: Colors.black),) : null,
      leading: leading,
      actions: actions,

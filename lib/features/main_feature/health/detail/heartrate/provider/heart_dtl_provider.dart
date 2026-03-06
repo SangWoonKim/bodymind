@@ -16,4 +16,4 @@ final hrDtlRepoUsecase = Provider<HeartDtlUsecase>((ref){
   return HeartDtlUsecase(repo);
 });
 
-final hrDtlViewModelProvider = NotifierProvider<HeartDtlViewModel, HeartDtlState>(HeartDtlViewModel.new);
+final hrDtlViewModelProvider = AutoDisposeNotifierProvider<HeartDtlViewModel, HeartDtlState>(HeartDtlViewModel.new);

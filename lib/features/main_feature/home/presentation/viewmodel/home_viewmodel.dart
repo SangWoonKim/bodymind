@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bodymind/features/main_feature/home/domain/entity/feature_entity.dart';
 import 'package:bodymind/features/main_feature/home/domain/usecase/home_usecase.dart';
 import 'package:bodymind/features/user/domain/entity/user_info.dart';
@@ -133,12 +135,27 @@ class HomeViewModel extends Notifier<HomeViewState> {
     DateTime previousDay = now.add(Duration(days: -1));
 
     Stream<FeatureEntity> streamData = _homeUsecase.selectAllParallelEmitAsDone(previousDays);
+
+    int receiveCnt = 4;
+    List<int> prevScore  = List.empty(growable: true);
+    List<int> totScore = List.empty(growable: true);
+    List<int> weeklyScore = List.empty(growable: true);
+
     streamData.listen((receive) {
       switch(receive.category){
 
         //act
         case DataCatalog.Act:
           final actScore = HomeActInjector().processingAct(receive.featureLst, _userInfo!, state);
+          if(actScore!.first != 0){
+            totScore.add(actScore.first);
+          }
+          if(actScore!.second != 0){
+            prevScore.add(actScore.second);
+          }
+          if(actScore!.third != 0){
+            weeklyScore.add(actScore.third);
+          }
 
           state = state.copyWith(
               totalScore: actScore!.first,
@@ -152,7 +169,15 @@ class HomeViewModel extends Notifier<HomeViewState> {
           //ex
         case DataCatalog.Exercise:
           final exScore = HomeExerciseInjector().processingEx(receive, now, previousDay, state);
-
+          if(exScore!.first != 0){
+            totScore.add(exScore.first);
+          }
+          if(exScore!.second != 0){
+            prevScore.add(exScore.second);
+          }
+          if(exScore!.third != 0){
+            weeklyScore.add(exScore.third);
+          }
           state = state.copyWith(
               totalScore: exScore!.first,
               previousScore: exScore!.second,
@@ -164,7 +189,15 @@ class HomeViewModel extends Notifier<HomeViewState> {
           //hr
         case DataCatalog.Heart:
           final hrScore = HomeHeartInjector().processingHr(receive, now, previousDay, state, _userInfo!);
-
+          if(hrScore!.first != 0){
+            totScore.add(hrScore.first);
+          }
+          if(hrScore!.second != 0){
+            prevScore.add(hrScore.second);
+          }
+          if(hrScore!.third != 0){
+            weeklyScore.add(hrScore.third);
+          }
           state = state.copyWith(
               totalScore: hrScore!.first,
               previousScore: hrScore!.second,
@@ -177,7 +210,15 @@ class HomeViewModel extends Notifier<HomeViewState> {
           //sleep
         case DataCatalog.Sleep:
           final sleepScore = HomeSleepInjector().processingSlp(receive, now, previousDay, state);
-
+          if(sleepScore!.first != 0){
+            totScore.add(sleepScore.first);
+          }
+          if(sleepScore!.second != 0){
+            prevScore.add(sleepScore.second);
+          }
+          if(sleepScore!.third != 0){
+            weeklyScore.add(sleepScore.third);
+          }
           state = state.copyWith(
               totalScore: sleepScore!.first,
               previousScore: sleepScore!.second,
@@ -186,7 +227,14 @@ class HomeViewModel extends Notifier<HomeViewState> {
           );
           break;
       }
-
+      receiveCnt--;
+      if(receiveCnt == 0){
+        state = state.copyWith(
+          totalScore: totScore.isEmpty ? 0 : totScore.reduce((a,b) => a + b) ~/ totScore.length,
+          previousScore: prevScore.isEmpty ? 0 : prevScore.reduce((a,b) => a + b) ~/ prevScore.length,
+          weeklyScore: weeklyScore.isEmpty ? 0 : weeklyScore.reduce((a,b) => a + b) ~/ weeklyScore.length,
+        );
+      }
     });
   }
 

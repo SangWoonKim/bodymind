@@ -1,5 +1,6 @@
 import 'package:bodymind/const/route/router.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -12,7 +13,10 @@ Future<void> main() async{
   await initializeDateFormatting('ko_KR', null);
   Intl.defaultLocale = 'ko_KR';
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  runApp(
+  SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,));
+          runApp(
       ProviderScope(
         child: MyApp(),
       ),
@@ -36,7 +40,8 @@ class MyApp extends ConsumerWidget {
           debugShowCheckedModeBanner: false,
           routerConfig: router,
           theme: ThemeData(
-            useMaterial3: true
+            useMaterial3: true,
+              scaffoldBackgroundColor: Colors.white
           ),
         );
       },
