@@ -60,6 +60,8 @@ class HealthRepositoryImpl extends HealthRepository{
       groupedBaseDt.keys.forEach((e){
         double totalCalorie = 0;
         int totalDuration = 0;
+        double totalDistance = 0;
+
         List<FeatureExerciseDtl?> baseExLst = groupedBaseDt[e]?.map((e) {
 
           final element = e.data as ExerciseModel?;
@@ -71,15 +73,17 @@ class HealthRepositoryImpl extends HealthRepository{
             int duration = (e.baseEndTime! - e.baseStartTime!) * 1000;
 
             totalCalorie += element.calorie ;
-            totalDuration = duration;
+            totalDuration += duration;
+            totalDistance += element.distance;
 
             List<String> normalizedHrLst = element.heartRateLst.map((e) => e.heartRate.toString()).toList();
             return FeatureExerciseDtl(insrDt, endDt, normalizedHrLst, element.exerciseType, '다음에 하자', element.count, element.distance, element.calorie, duration);
           }
 
         }).toList() ?? [];
+
         if(baseExLst.isNotEmpty){
-          groupCpt.add(FeatureModel(e, FeatureExercise(totalDuration, totalCalorie, baseExLst)) );
+          groupCpt.add(FeatureModel(e, FeatureExercise(TimeUtil.yyyyMMddToDateTime(e),totalDuration, totalCalorie, totalDistance, baseExLst)) );
         }
       });
 

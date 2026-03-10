@@ -47,6 +47,7 @@ class HomeDbRepositoryImpl extends HomeDbRepository{
 
       double dtlTotCal = 0;
       int dtlTotDuration = 0;
+      double dtlTotDstc = 0;
       groupedExSn.keys.forEach((e) {
         List<String>? hrLst = groupedExSn[e]?.asMap().values.map((dtl) => dtl.hrLst.toString()).toList();
         if(hrLst != null){
@@ -55,7 +56,8 @@ class HomeDbRepositoryImpl extends HomeDbRepository{
           int duration = TimeUtil.hhmmToMinute(dtlInfo.endHhmm) - TimeUtil.hhmmToMinute(dtlInfo.startHhmm);
 
           dtlTotDuration += duration;
-          dtlTotCal += dtlTotCal;
+          dtlTotCal += dtlInfo.calorie;
+          dtlTotDstc += dtlInfo.distance;
 
           dtlLst.add(
               FeatureExerciseDtl(
@@ -67,7 +69,14 @@ class HomeDbRepositoryImpl extends HomeDbRepository{
         }
       });
 
-      returnedData.add(FeatureModel(exBaseDate.key, FeatureExercise(dtlTotDuration,dtlTotCal,dtlLst)));
+      returnedData.add(FeatureModel(exBaseDate.key,
+          FeatureExercise(
+              TimeUtil.yyyyMMddToDateTime(exBaseDate.key),
+              dtlTotDuration,
+              dtlTotCal,
+              dtlTotDstc,
+              dtlLst)
+      ));
     }
 
     return returnedData.isEmpty ? null : returnedData;
