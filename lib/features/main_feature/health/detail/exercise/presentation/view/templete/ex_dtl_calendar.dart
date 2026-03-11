@@ -8,18 +8,22 @@ import '../../../../../../home/presentation/theme/home_theme.dart';
 
 class ExDtlCalendar extends StatefulWidget{
   final DateTime initialDate;
-  final DateTime firstDate;
-  final DateTime lastDate;
+  DateTime? firstDate;
+  DateTime? lastDate;
   final ValueChanged<DateTime> onDateSelected;
   final ExMonthDto exDatas;
 
-  const ExDtlCalendar({
+  ExDtlCalendar({
     required this.initialDate,
-    required this.firstDate,
-    required this.lastDate,
     required this.onDateSelected, super.key,
-    required this.exDatas
-  });
+    required this.exDatas,
+    this.firstDate,
+    this.lastDate
+  }
+  ){
+    firstDate ?? DateTime(2020);
+    lastDate ?? DateTime(2030);
+  }
 
   @override
   State<StatefulWidget> createState() =>ExDtlCalendarState();
@@ -51,15 +55,15 @@ class ExDtlCalendarState extends State<ExDtlCalendar>{
 
   bool _isSelectable(DateTime date) {
     final d = _dateOnly(date);
-    return !d.isBefore(_dateOnly(widget.firstDate)) &&
-        !d.isAfter(_dateOnly(widget.lastDate));
+    return !d.isBefore(_dateOnly(widget.firstDate!)) &&
+        !d.isAfter(_dateOnly(widget.lastDate!));
   }
 
   void _moveMonth(int offset) {
     final moved = DateTime(visibleMonth.year, visibleMonth.month + offset, 1);
 
-    final firstMonth = DateTime(widget.firstDate.year, widget.firstDate.month, 1);
-    final lastMonth = DateTime(widget.lastDate.year, widget.lastDate.month, 1);
+    final firstMonth = DateTime(widget.firstDate!.year, widget.firstDate!.month, 1);
+    final lastMonth = DateTime(widget.lastDate!.year, widget.lastDate!.month, 1);
 
     if (moved.isBefore(firstMonth) || moved.isAfter(lastMonth)) return;
 

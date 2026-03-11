@@ -94,6 +94,7 @@ class UserViewModel extends Notifier<UserViewState>{
 
   void routeUserPage(BuildContext context){
     context.pushReplacementNamed('home');
+    // context.(UserPage())
   }
 
   void insertUserInfo(BuildContext context) async{

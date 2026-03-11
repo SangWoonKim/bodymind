@@ -16,6 +16,8 @@ import '../../../../../const/theme/global_theme.dart';
 import '../../theme/user_theme.dart';
 
 class UserRegisterView extends ConsumerWidget{
+  const UserRegisterView({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final pageModelState = ref.watch(userViewModelProvider);
