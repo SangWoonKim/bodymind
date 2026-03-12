@@ -34,7 +34,7 @@ class HomeExerciseInjector {
     return raw.clamp(150.0, 600.0);
   }
 
-  double _sessionScore(ExerciseSession s, double kcalGoal) {
+  double sessionScore(ExerciseSession s, double kcalGoal) {
   // 간단 목표치들(원하면 kcalGoal 기반으로 파생 가능)
   final distGoal = (kcalGoal / 60.0).clamp(2.0, 10.0); // 임시: 60kcal/km 근사
   final minGoal = 40.0;
@@ -77,7 +77,7 @@ class HomeExerciseInjector {
     final weights = <ExerciseType, double>{};
 
     for (final s in sessions) {
-      final sc = _sessionScore(s!, kcalGoal);
+      final sc = sessionScore(s!, kcalGoal);
       final w = math.max(s.activeKcal, 20.0); // 작은 세션 영향 제한
       sums[s.type] = (sums[s.type] ?? 0) + sc * w;
       weights[s.type] = (weights[s.type] ?? 0) + w;

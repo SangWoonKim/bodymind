@@ -12,6 +12,7 @@ import '../entity/ex_daily_dto.dart';
 class ExDtlUsecase {
  final ExDtlRepository repository;
 
+
  ExDtlUsecase(this.repository);
 
  Future<ExMonthDto?> loadDbExData(String stYmd, endYmd, DateTime selectMonth) async{
@@ -46,7 +47,8 @@ class ExDtlUsecase {
               5,
               e.hrLst.map((e) => int.parse(e)).toList(),
               filteredHr.featureMax().toInt(),
-              filteredHr.featureMin().toInt()
+              filteredHr.featureMin().toInt(),
+              HomeExerciseInjector().
           );
         }).toList()
     );

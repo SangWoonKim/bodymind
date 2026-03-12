@@ -6,6 +6,7 @@ import 'package:bodymind/features/main_feature/health/detail/exercise/presentati
 import 'package:bodymind/features/main_feature/health/detail/exercise/presentation/viewmodel/ex_dtl_viewmodel.dart';
 import 'package:bodymind/features/main_feature/health/detail/util/feature_theme.dart';
 import 'package:bodymind/features/main_feature/home/presentation/theme/home_theme.dart';
+import 'package:bodymind/features/main_feature/home/presentation/viewmodel/injector/home_exercise_injector.dart';
 import 'package:bodymind/features/user/presentation/theme/user_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
@@ -50,7 +51,7 @@ class ExDtlViewState extends ConsumerState<ExDtlView>{
             },
           ),
 
-          Text('${state.currentDate.year}년 ${state.currentDate.month}월', style: HomeTheme.evaluationTextStyle,),
+          Text('${state.selectedDate.year}년 ${state.selectedDate.month}월', style: HomeTheme.evaluationTextStyle,),
           GestureDetector(
             child: SizedBox(
               height: 40.h,
@@ -64,11 +65,13 @@ class ExDtlViewState extends ConsumerState<ExDtlView>{
     );
   }
 
-  Widget _calenderSelector(ExDtlState state){
+  Widget _calenderSelector(ExDtlState state, WidgetRef ref){
     return SizedBox(
       height: 324.h,
       width: 343.w,
-      child: ExDtlCalendar(initialDate: state.selectedDate, onDateSelected: (){}, exDatas: state.exDatas),
+      child: ExDtlCalendar(initialDate: state.selectedDate, onDateSelected: (selectedDate){
+        // ref.read(.notifier).selectedDate(selectedDate);
+      }, exDatas: state.exDatas),
     );
   }
 
@@ -90,7 +93,7 @@ class ExDtlViewState extends ConsumerState<ExDtlView>{
   }
 
   Widget _dateExLst(ExDtlState state){
-    final List<ExDailyDto> datas = state.exDatas.where((e) => e.day == state.selectedDate.days).toList();
+    final List<ExDailyDto> datas = state.exDatas.dailyData.where((e) => e.day == state.selectedDate.day).toList();
     return ListView.builder(
       itemCount: datas.first.element.length,
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h ),
@@ -100,6 +103,7 @@ class ExDtlViewState extends ConsumerState<ExDtlView>{
   }
 
   Widget _exLstCreator(ExElementDto dtlData){
+    final endTime = dtlData.strtDt.add(Duration(minutes: dtlData.duration));
     return Container(
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
       width: 343.w,
@@ -143,7 +147,7 @@ class ExDtlViewState extends ConsumerState<ExDtlView>{
                                     style: HomeTheme.titleTextStyle
                                 ),
                                 TextSpan(
-                                    text: '\n19:10~19:42',//parameter
+                                    text: '\n${dtlData.strtDt.hour}:${dtlData.strtDt.minute}~${endTime.hour}:${endTime.minute}',//parameter
                                     style: FeatureTheme.exExplainText.copyWith(color: Color(0xff6B7280))
                                 )
                               ]
@@ -180,7 +184,7 @@ class ExDtlViewState extends ConsumerState<ExDtlView>{
                               style: FeatureTheme.exExplainText.copyWith(color: Color(0xff6B7280))
                           ),
                           TextSpan(
-                              text: '\n32분',//parameter
+                              text: '\n${dtlData.duration}분',//parameter
                               style: FeatureTheme.exExplainDetail.copyWith(color: Color(0xff111827))
                           )
                         ]
@@ -199,7 +203,7 @@ class ExDtlViewState extends ConsumerState<ExDtlView>{
                               style: FeatureTheme.exExplainText.copyWith(color: Color(0xff6B7280))
                           ),
                           TextSpan(
-                              text: '\n3.4km', //parameter
+                              text: '\n${(dtlData.distance/1000).toStringAsFixed(1)}km', //parameter
                               style: FeatureTheme.exExplainDetail.copyWith(color: Color(0xff111827))
                           )
                         ]
@@ -218,7 +222,7 @@ class ExDtlViewState extends ConsumerState<ExDtlView>{
                               style: FeatureTheme.exExplainText.copyWith(color: Color(0xff6B7280))
                           ),
                           TextSpan(
-                              text: '\n240kcal', //parameter
+                              text: '\n${dtlData.activeCalorie.round()}kcal', //parameter
                               style: FeatureTheme.exExplainDetail.copyWith(color: Color(0xff111827))
                           )
                         ]
@@ -232,7 +236,7 @@ class ExDtlViewState extends ConsumerState<ExDtlView>{
           SizedBox(
             height: 24.h,
             width: 310.w,
-            child: Text('점수: ${30}'), //parameter
+            child: Text('점수: ${HomeExerciseInjector().processingEx(receive, now, previousDay, state)}'), //parameter
           )
         ],
       ),

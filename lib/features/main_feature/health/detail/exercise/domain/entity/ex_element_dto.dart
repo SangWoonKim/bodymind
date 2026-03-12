@@ -11,8 +11,9 @@ class ExElementDto {
   final List<int> hrLst;
   final int maxHr;
   final int minHr;
+  final int score;
 
   ExElementDto(this.strtDt, this.duration, this.exType, this.count,
       this.activeCalorie, this.distance, this.hrInterval, this.hrLst,
-      this.maxHr, this.minHr);
+      this.maxHr, this.minHr, this.score);
 }
