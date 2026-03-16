@@ -181,8 +181,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "v1.0.19"
-      resolved-ref: "31c2bdec3388ce8b0891ceb7145d05ca43ba913b"
+      ref: "v1.0.22"
+      resolved-ref: ac50f211507c1327d0cc2cbad57438f6e648645c
       url: "https://github.com/SangWoonKim/common_health_module.git"
     source: git
     version: "0.0.1"

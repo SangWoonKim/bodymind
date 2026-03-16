@@ -1,5 +1,6 @@
 import 'package:bodymind/features/main_feature/health/detail/exercise/domain/entity/ex_month_dto.dart';
 import 'package:bodymind/features/main_feature/health/detail/exercise/domain/usecase/ex_dtl_usecase.dart';
+import 'package:bodymind/features/main_feature/health/detail/exercise/presentation/provider/ex_dtl_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../../../core/util/bodymind_core_util.dart';
@@ -31,8 +32,8 @@ class ExDtlViewmodel extends AutoDisposeNotifier<ExDtlState>{
 
   @override
   ExDtlState build() {
-    _exDtlUsecase = ref.read(exDtlUsecase);
-
+    _exDtlUsecase = ref.read(exDtlUsecaseProvider);
+    Future.microtask(()=> initalize(DateTime.now()));
     return ExDtlState.initialize();
   }
 

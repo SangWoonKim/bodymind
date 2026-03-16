@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:bodymind/core/storage/database/query/bodymind_database.dart';
 import 'package:bodymind/core/storage/feature_model/feature_data/exercise/detail/feature_exercise_dtl.dart';
 import 'package:bodymind/core/storage/feature_model/feature_data/exercise/feature_exercise.dart';
@@ -33,7 +35,7 @@ class ExDtlRepositoryImpl extends ExDtlRepository{
         totalDistance += e.distance;
         totalCalorie += e.calorie;
         totalDuration += duration;
-        return FeatureExerciseDtl(e.startHhmm, e.endHhmm, e.hrLst.split(','), ExerciseClassify.fromValue(e.exSn),
+        return FeatureExerciseDtl(e.startHhmm, e.endHhmm, List<String>.from(jsonDecode(e.hrLst)), ExerciseClassify.fromValue(e.exSn),
         e.metricKind, e.metricVal.toInt(), e.distance, e.calorie, duration);
       }).toList();
 
@@ -48,6 +50,8 @@ class ExDtlRepositoryImpl extends ExDtlRepository{
           )
       );
     });
+
+    return returnResult;
   }
 
 

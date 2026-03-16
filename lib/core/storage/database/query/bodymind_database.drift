@@ -67,7 +67,8 @@ CREATE TABLE tb_feature_exercise_info (
   distance    REAL NOT NULL,
   calorie     REAL NOT NULL,
   start_hhmm  TEXT NOT NULL,      -- 'HHmm'
-  end_hhmm    TEXT NOT NULL       -- 'HHmm'
+  end_hhmm    TEXT NOT NULL,      -- 'HHmm'
+  UNIQUE (base_date, type, start_hhmm, end_hhmm)
 );
 
 CREATE TABLE tb_feature_exercise_hr (

@@ -5,27 +5,32 @@ import 'package:bodymind/features/main_feature/health/detail/exercise/domain/ent
 import 'package:bodymind/features/main_feature/health/detail/exercise/domain/repository/ex_dtl_repository.dart';
 import 'package:bodymind/features/main_feature/health/detail/util/feature_util.dart';
 import 'package:bodymind/features/main_feature/home/presentation/viewmodel/injector/home_exercise_injector.dart';
+import 'package:bodymind/features/user/domain/usecase/user_usecase.dart';
 
 import '../../../../../../../core/storage/feature_model/feature_model.dart';
+import '../../../../../../user/domain/entity/user_info.dart';
 import '../entity/ex_daily_dto.dart';
 
 class ExDtlUsecase {
  final ExDtlRepository repository;
+ final UserUseCase userUseCase;
 
-
- ExDtlUsecase(this.repository);
+ ExDtlUsecase(this.repository, this.userUseCase);
 
  Future<ExMonthDto?> loadDbExData(String stYmd, endYmd, DateTime selectMonth) async{
   List<FeatureModel>? exModels = await repository.loadDbExDataForDate(stYmd, endYmd);
+  UserInfo? userInfo = await userUseCase.getUserInfo();
   if(exModels == null) return null;
-  return makeExDatas(exModels, selectMonth);
+  return makeExDatas(exModels, selectMonth, userInfo);
  }
 
- ExMonthDto makeExDatas(List<FeatureModel> exModels, DateTime selectMonth){
+ ExMonthDto makeExDatas(List<FeatureModel> exModels, DateTime selectMonth, UserInfo? userInfo) {
 
   MonthRangeResult montlyDate = TimeUtil().buildMonthWeekRanges(selectMonth.year, selectMonth.month);
   List<ExDailyDto> dailyData = List.empty(growable: true);
 
+
+  final scoreInjector = HomeExerciseInjector();
   dailyData = exModels.map((e){
     final data = e.feature as FeatureExercise;
     return ExDailyDto(
@@ -48,7 +53,15 @@ class ExDtlUsecase {
               e.hrLst.map((e) => int.parse(e)).toList(),
               filteredHr.featureMax().toInt(),
               filteredHr.featureMin().toInt(),
-              HomeExerciseInjector().
+              scoreInjector.sessionScore(
+                  ExerciseSession(
+                      type: ExerciseType.convertClassify(e.exerciseType),
+                      activeKcal: e.calorie,
+                      distanceKm: e.distance,
+                      minutes: e.duration,
+                      strokes: e.metricVal),
+                  scoreInjector.exerciseKcalGoalDay(12.0)).toInt(),
+            e.exerciseType.exName //추후 별칭 변수 추가해서 수정 필요
           );
         }).toList()
     );

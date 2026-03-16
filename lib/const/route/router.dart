@@ -1,4 +1,7 @@
 import 'package:bodymind/features/main_feature/health/detail/activity/presentation/view/health_dtl_act_view.dart';
+import 'package:bodymind/features/main_feature/health/detail/exercise/domain/entity/ex_element_dto.dart';
+import 'package:bodymind/features/main_feature/health/detail/exercise/presentation/view/element/ex_element_view.dart';
+import 'package:bodymind/features/main_feature/health/detail/exercise/presentation/view/health_ex_dtl_view.dart';
 import 'package:bodymind/features/main_feature/health/detail/heartrate/presentation/view/health_dtl_heart_view.dart';
 import 'package:bodymind/features/main_feature/main_feature_nav/bottom_navigation_view.dart';
 import 'package:bodymind/features/splash/presentation/provider/splash_provider.dart';
@@ -70,6 +73,25 @@ final routeProvider = Provider<GoRouter>((ref){
           builder: (context, state) {
             return HealthDtlActView(); // ymd 없이
           },
+        ),
+        GoRoute(
+          path: '/feature/exercise',
+          name: 'featureEx',
+          builder: (ctx, state){
+            return HealthExDtlView();
+          },
+          routes: [
+            GoRoute(
+              path: 'daily',
+              name: 'featureDailyEx',
+              builder: (ctx, state){
+                final elementState = state.extra as List<Object>;
+                final dateTime = elementState.first as DateTime;
+                final exDailyData = elementState[1] as ExElementDto;
+                return ExElementView(dateTime, exDailyData);
+              }
+            )
+          ]
         ),
         //bottomNavigationView 하위 위젯 정의
         StatefulShellRoute.indexedStack(

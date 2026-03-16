@@ -4,21 +4,34 @@ import 'package:drift/drift.dart';
 import '../../feature_model/feature_data/sleep/detail/feature_sleep_dtl.dart';
 
 extension BodymindExtension on BodymindDatabase{
-  Future<int> insertFeatureExercise({
+  Future<int?> insertFeatureExercise({
     required TbFeatureExerciseInfoCompanion info,
     required TbFeatureExerciseHrCompanion hrList,
   }) async {
-    // 전체 과정을 하나의 트랜잭션으로 묶습니다.
     return await transaction(() async {
-      // 1. 운동 세션 insert 후 자동 생성된 ID(row_sn)를 받아옵니다.
+      final baseDateVal = info.baseDate.value;
+      final typeVal = info.type.value;
+      final startVal = info.startHhmm.value;
+      final endVal = info.endHhmm.value;
+
+      final existing = await (select(tbFeatureExerciseInfo)
+        ..where((t) =>
+        t.baseDate.equals(baseDateVal) &
+        t.type.equals(typeVal) &
+        t.startHhmm.equals(startVal) &
+        t.endHhmm.equals(endVal)))
+          .getSingleOrNull();
+
+      if (existing != null) {
+        return existing.exSn;
+      }
+
       final exSn = await into(tbFeatureExerciseInfo).insert(info);
 
-      // 2. 심박수 데이터를 반복문으로 insert 합니다.
-
-      // 받아온 exSn을 자식 데이터에 주입
       await into(tbFeatureExerciseHr).insert(
         hrList.copyWith(exSn: Value(exSn)),
       );
+
       return exSn;
     });
   }

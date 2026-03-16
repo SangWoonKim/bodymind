@@ -1,13 +1,151 @@
 import 'dart:math' as math;
 
 import 'package:bodymind/features/main_feature/home/domain/entity/feature_entity.dart';
+import 'package:common_mutiple_health/entity/const/exercise_classfiy.dart';
 
 import '../../../../../../core/storage/feature_model/feature_data/exercise/feature_exercise.dart';
 import '../../../../../../core/util/fourth.dart';
+import '../../../../../user/domain/entity/user_info.dart';
 import '../home_viewmodel.dart';
 
 //모든 유형의 카테고리를 챙길수 없기에 큰분류로 나눔 (유산소, 자전거, 근력, 수영)
-enum ExerciseType { walkRun, cycle, strength, swim }
+enum ExerciseType {
+  walkRun('runner.svg'),
+  cycle('cycle.svg'),
+  strength('strength.svg'),
+  swim('swim.svg'),
+  cadio('cadio.svg');
+
+  final String svgIconPath;
+  const ExerciseType(this.svgIconPath);
+  static ExerciseType convertClassify(ExerciseClassify classify){
+    return switch(classify){
+
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeOtherWorkout => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeBadminton => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeBaseball => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeBasketball => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeBiking => .cycle,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeBikingStationary => .cycle,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeBootCamp => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeBoxing => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeCalisthenics => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeCricket => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeDancing => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeElliptical => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeExerciseClass => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeFencing => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeFootballAmerican => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeFootballAustralian => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeFrisbeeDisc => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeGolf => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeGuidedBreathing => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeGymnastics => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeHandball => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeHighIntensityIntervalTraining => .strength,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeHiking => .walkRun,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeIceHockey => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeIceSkating => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeMartialArts => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypePaddling => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeParagliding => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypePilates => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeRacquetball => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeRockClimbing => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeRollerHockey => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeRowing => .strength,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeRowingMachine => .strength,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeRugby => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeRunning => .walkRun,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeRunningTreadmill => .walkRun,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeSailing => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeScubaDiving => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeSkating => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeSkiing => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeSnowboarding => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeSnowshoeing => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeSoccer => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeSoftball => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeSquash => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeStairClimbing => .walkRun,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeStairClimbingMachine => .walkRun,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeStrengthTraining => .strength,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeStretching => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeSurfing => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeSwimmingOpenWater => .swim,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeSwimmingPool => .swim,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeTableTennis => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeTennis => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeVolleyball => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeWalking => .walkRun,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeWaterPolo => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeWeightlifting => .strength,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeWheelchair => .cadio,
+      // TODO: Handle this case.
+      ExerciseClassify.exerciseTypeYoga => .cadio,
+    };
+  }
+}
 
 class ExerciseSession {
   final ExerciseType type;
@@ -32,6 +170,16 @@ class HomeExerciseInjector {
   double exerciseKcalGoalDay(double bmr, {double afEx = 1.22}) {
     final raw = bmr * (afEx - 1.0);
     return raw.clamp(150.0, 600.0);
+  }
+
+  double calculateBmr(UserInfo userInfo) {
+    //required param - height, weight, age, gender
+    //male (10 X 체중 kg) + (6.25 X 키 cm) - (5 X 나이) + 5
+    //female (10 X 체중 kg) + (6.25 X 키 cm) - (5 X 나이) - 161
+
+    return userInfo.gender.toUpperCase() == 'M'
+        ? (10 * userInfo.weight) + (6.25 * userInfo.height) - (5 * userInfo.age) + 5
+        : (10 * userInfo.weight) + (6.25 * userInfo.height) - (5 * userInfo.age) - 161;
   }
 
   double sessionScore(ExerciseSession s, double kcalGoal) {
@@ -61,6 +209,11 @@ class HomeExerciseInjector {
     final rDist   = s.distanceKm / distGoal;
     final rCal    = s.activeKcal / kcalGoal;
     return 100 * (0.45*p(rStroke) + 0.35*p(rDist) + 0.20*p(rCal));
+
+    case ExerciseType.cadio:
+      final rDist = s.distanceKm / distGoal;
+      final rCal  = s.activeKcal / kcalGoal;
+      return 100 * (0.55*p(rDist) + 0.45*p(rCal));
     }
   }
 

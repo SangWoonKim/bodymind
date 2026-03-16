@@ -94,6 +94,9 @@ class TimeUtil {
   static String yyyyMMddToMdString(String date){
     return DateFormat('M월 d일', 'ko_KR').format(yyyyMMddToDateTime(date));
   }
+  static String yyyyMMddToDtMdString(DateTime date){
+    return DateFormat('M월 d일', 'ko_KR').format(date);
+  }
 
   static String yyyyMMddToEString(String date){
     return DateFormat('E요일', 'ko_KR').format(yyyyMMddToDateTime(date));

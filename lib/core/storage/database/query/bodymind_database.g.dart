@@ -2686,6 +2686,10 @@ class TbFeatureExerciseInfo extends Table
   @override
   Set<GeneratedColumn> get $primaryKey => {exSn};
   @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {baseDate, type, startHhmm, endHhmm},
+  ];
+  @override
   TbFeatureExerciseInfoData map(
     Map<String, dynamic> data, {
     String? tablePrefix,
@@ -2736,6 +2740,10 @@ class TbFeatureExerciseInfo extends Table
     return TbFeatureExerciseInfo(attachedDatabase, alias);
   }
 
+  @override
+  List<String> get customConstraints => const [
+    'UNIQUE(base_date, type, start_hhmm, end_hhmm)',
+  ];
   @override
   bool get dontWriteConstraints => true;
 }

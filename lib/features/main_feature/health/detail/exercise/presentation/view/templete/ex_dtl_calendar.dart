@@ -1,9 +1,11 @@
+import 'package:bodymind/features/main_feature/health/detail/exercise/domain/entity/ex_daily_dto.dart';
+import 'package:bodymind/features/main_feature/health/detail/exercise/domain/entity/ex_element_dto.dart';
 import 'package:bodymind/features/main_feature/health/detail/exercise/domain/entity/ex_month_dto.dart';
 import 'package:bodymind/features/main_feature/home/presentation/viewmodel/injector/home_exercise_injector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
+import 'package:collection/collection.dart';
 import '../../../../../../home/presentation/theme/home_theme.dart';
 
 class ExDtlCalendar extends StatefulWidget{
@@ -14,16 +16,14 @@ class ExDtlCalendar extends StatefulWidget{
   final ExMonthDto exDatas;
 
   ExDtlCalendar({
+    super.key,
     required this.initialDate,
-    required this.onDateSelected, super.key,
+    required this.onDateSelected,
     required this.exDatas,
-    this.firstDate,
-    this.lastDate
-  }
-  ){
-    firstDate ?? DateTime(2020);
-    lastDate ?? DateTime(2030);
-  }
+    DateTime? firstDate,
+    DateTime? lastDate,
+  })  : firstDate = firstDate ?? DateTime(2020, 1, 1),
+        lastDate = lastDate ?? DateTime(2030, 12, 31);
 
   @override
   State<StatefulWidget> createState() =>ExDtlCalendarState();
@@ -35,7 +35,7 @@ class ExDtlCalendarState extends State<ExDtlCalendar>{
 
   late DateTime selectedDate;
   late DateTime visibleMonth;
-  late ExMonthDto datas;
+  late Map<int, List<ExElementDto>> groupedData;
 
   DateTime _dateOnly(DateTime date) {
     return DateTime(date.year, date.month, date.day);
@@ -100,142 +100,151 @@ class ExDtlCalendarState extends State<ExDtlCalendar>{
     super.initState();
     selectedDate = _dateOnly(widget.initialDate);
     visibleMonth = DateTime(widget.initialDate.year, widget.initialDate.month);
-    datas = widget.exDatas;
+    Map<int,List<ExElementDto>> data = {};
+    widget.exDatas.dailyData.forEach((e) => data.addAll({e.day: e.element}));
+    groupedData = data;
+
+  }
+
+  @override
+  void didUpdateWidget(covariant ExDtlCalendar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if(oldWidget.initialDate != widget.initialDate){
+      setState(() {
+        visibleMonth = DateTime(widget.initialDate.year, widget.initialDate.month);
+      });
+    }
+
+    if(oldWidget.exDatas != widget.exDatas){
+      setState(() {
+        Map<int,List<ExElementDto>> data = {};
+        widget.exDatas.dailyData.forEach((e) => data.addAll({e.day: e.element}));
+        groupedData = data;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final dates = _buildCalendarDates();
-    final today = _dateOnly(widget.initialDate);
-    return Container(
-      child: Column(
-        children: [
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-            child: Row(
-              children: weekDays
-                  .map(
-                    (day) => Expanded(
-                  child: Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8.w),
-                      child: Text(
-                        day,
-                        style: HomeTheme.suggestTextStyle.copyWith(color: day == '토'
-                            ? Colors.blue
-                            : day == '일'
-                            ? Colors.red
-                            : Colors.black87,
-                        ),
-                      ),
+    final today = _dateOnly(selectedDate);
+    return Padding(
+        padding: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 8.h),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final rowCount = (dates.length / 7).ceil();
+
+            const crossAxisCount = 7;
+            final crossSpacing = 4.w;
+            final mainSpacing = 2.h;
+
+            final totalHorizontalSpacing = crossSpacing * (crossAxisCount - 1);
+            final totalVerticalSpacing = mainSpacing * (rowCount - 1);
+
+            final cellWidth =
+                (constraints.maxWidth - totalHorizontalSpacing) / crossAxisCount;
+            final cellHeight =
+                (constraints.maxHeight - totalVerticalSpacing) / rowCount;
+
+            final aspectRatio = cellWidth / cellHeight;
+
+            return GridView.builder(
+              itemCount: dates.length,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                mainAxisSpacing: mainSpacing,
+                crossAxisSpacing: crossSpacing,
+                childAspectRatio: aspectRatio,
+              ),
+              itemBuilder: (ctx, idx) {
+                final date = dates[idx];
+                final bool isCurrentMonth = date.month == visibleMonth.month;
+                final bool isSelected = _isSameDate(date, selectedDate);
+                final bool isToday = _isSameDate(date, today);
+                final bool isEnabled = _isSelectable(date);
+                final List<Widget> typeIcons = _iconCreator(date, widget.exDatas);
+
+                Color textColor = Colors.black87;
+                if (date.weekday == DateTime.saturday) textColor = Colors.blue;
+                if (date.weekday == DateTime.sunday) textColor = Colors.red;
+
+                if (!isCurrentMonth) {
+                  textColor = textColor.withOpacity(0.25);
+                } else if (!isEnabled) {
+                  textColor = Colors.grey.shade400;
+                }
+
+                return InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: (!isEnabled || !isCurrentMonth)
+                      ? null
+                      : () {
+                    setState(() {
+                      selectedDate = date;
+                    });
+                    widget.onDateSelected(date);
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? Color(0xffebf2fe)
+                          : isToday
+                          ? Colors.grey.shade200
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                      border: isToday && !isSelected
+                          ? Border.all(color: Colors.black26)
+                          : null,
+                    ),
+                    child: LayoutBuilder(
+                      builder: (context, constraint) {
+                        return Padding(
+                          padding: EdgeInsets.symmetric(vertical: 4.h),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                '${date.day}',
+                                style: TextStyle(
+                                  fontSize: 15.sp,
+                                  fontWeight: isSelected || isToday
+                                      ? FontWeight.w700
+                                      : FontWeight.w500,
+                                  color: isSelected ? Colors.white : textColor,
+                                ),
+                              ),
+                              SizedBox(
+                                height: constraint.maxHeight * 0.22,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: typeIcons,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                   ),
-                ),
-              ).toList(),
-            ),
-          ),
-
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 8.h ),
-              child: GridView.builder(
-                itemCount: dates.length,
-                physics: NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 7,
-                  mainAxisSpacing: 2.h,
-                  crossAxisSpacing: 4.w,
-                  childAspectRatio: 1.sp
-                ),
-                itemBuilder: (ctx,idx){
-                  final date = dates[idx];
-                  final bool isCurrentMonth = date.month == visibleMonth.month;
-                  final bool isSelected = _isSameDate(date, selectedDate);
-                  final bool isToday = _isSameDate(date, today);
-                  final bool isEnabled = _isSelectable(date);
-                  final List<Widget> typeIcons = _iconCreator(date, datas);
-
-                  Color textColor = Colors.black87;
-                  if (date.weekday == DateTime.saturday) textColor = Colors.blue;
-                  if (date.weekday == DateTime.sunday) textColor = Colors.red;
-
-                  if (!isCurrentMonth) {
-                    textColor = textColor.withOpacity(0.25);
-                  } else if (!isEnabled) {
-                    textColor = Colors.grey.shade400;
-                  }
-
-
-                  return InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: (!isEnabled || !isCurrentMonth)
-                        ? null
-                        : () {
-                      setState(() {
-                        selectedDate = date;
-                      });
-                      widget.onDateSelected(date);
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? Colors.black87
-                            : isToday
-                            ? Colors.grey.shade200
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(12),
-                        border: isToday && !isSelected
-                            ? Border.all(color: Colors.black26)
-                            : null,
-                      ),
-                      child: LayoutBuilder(
-                        builder: (context, constraint) {
-                          return Center(
-                            child: Column(
-                              mainAxisAlignment: .spaceBetween,
-                              children: [
-                                Text(
-                                  '${date.day}',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: isSelected || isToday
-                                        ? FontWeight.w700
-                                        : FontWeight.w500,
-                                    color: isSelected ? Colors.white : textColor,
-                                  ),
-                                ),
-                                SizedBox(
-                                  height: constraint.maxHeight * 0.2,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: typeIcons,
-                                  ),
-                                )
-                              ],
-                            ),
-                          );
-                        }
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          )
-        ],
-      ),
-
-
-    );
+                );
+              },
+            );
+          },
+        ),
+      );
   }
 
   List<Widget> _iconCreator(DateTime date, ExMonthDto datas){
     List<Widget> typeIcons = List.empty(growable: true);
-    datas.dailyData.where((e) => e.day == date.day).map((e){
-      e.element.map((e) {
-        if(typeIcons.length > 3){
-          return;
-        }
+
+    final dailyData = groupedData[date.day] ?? [];
+
+    for(final e in dailyData){
+        if(typeIcons.length > 3) break;
+
+        //색상 및 아이콘 작업 필요
         switch(e.exType){
 
           case ExerciseType.walkRun:
@@ -247,7 +256,7 @@ class ExDtlCalendarState extends State<ExDtlCalendar>{
                   color: Color(0xffDBEAFE)
               ),
               child: Center(
-                child: SvgPicture.asset('assets/images/icon/ex/runner.svg',colorFilter: ColorFilter.mode(Color(0xff2563eb), BlendMode.srcIn),),
+                child: SvgPicture.asset('assets/images/icon/runner.svg',colorFilter: ColorFilter.mode(Color(0xff2563eb), BlendMode.srcIn),),
               ),
             ));
             break;
@@ -293,9 +302,21 @@ class ExDtlCalendarState extends State<ExDtlCalendar>{
               ),
             ));
             break;
+          case ExerciseType.cadio:
+            typeIcons.add(Container(
+              height: 4.h,
+              width: 4.w,
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(100),
+                  color: Color(0xffDBEAFE)
+              ),
+              child: Center(
+                child: SvgPicture.asset('assets/images/icon/ex/swim.svg',colorFilter: ColorFilter.mode(Color(0xff2563eb), BlendMode.srcIn),),
+              ),
+            ));
+            break;
         }
-      });
-    });
+    }
     return typeIcons;
   }
 

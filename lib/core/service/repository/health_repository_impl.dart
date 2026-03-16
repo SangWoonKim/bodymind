@@ -67,8 +67,8 @@ class HealthRepositoryImpl extends HealthRepository{
           final element = e.data as ExerciseModel?;
 
           if(element != null){
-            String insrDt = TimeUtil.dateTimeToyymmdd(DateTime.fromMillisecondsSinceEpoch(e.baseStartTime!));
-            String endDt = TimeUtil.dateTimeToyymmdd(DateTime.fromMillisecondsSinceEpoch(e.baseEndTime!));
+            String insrDt = TimeUtil.dateTimeToFullDt(DateTime.fromMillisecondsSinceEpoch(e.baseStartTime!));
+            String endDt = TimeUtil.dateTimeToFullDt(DateTime.fromMillisecondsSinceEpoch(e.baseEndTime!));
 
             int duration = (e.baseEndTime! - e.baseStartTime!) * 1000;
 
@@ -77,7 +77,7 @@ class HealthRepositoryImpl extends HealthRepository{
             totalDistance += element.distance;
 
             List<String> normalizedHrLst = element.heartRateLst.map((e) => e.heartRate.toString()).toList();
-            return FeatureExerciseDtl(insrDt, endDt, normalizedHrLst, element.exerciseType, '다음에 하자', element.count, element.distance, element.calorie, duration);
+            return FeatureExerciseDtl(insrDt, endDt, normalizedHrLst, element.exerciseType, '걸음', element.count, element.distance, element.calorie, duration);
           }
 
         }).toList() ?? [];
