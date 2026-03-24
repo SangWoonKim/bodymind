@@ -23,6 +23,34 @@ class HealthExDtlView extends ConsumerStatefulWidget{
 }
 
 class HealthExDtlViewState extends ConsumerState<HealthExDtlView>{
+  int _initialPage = 10000;
+  late final PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: _initialPage);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _pageController.dispose();
+  }
+
+  void _movePrevDay() {
+    _pageController.previousPage(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOut,
+    );
+  }
+
+  void _moveNextDay() {
+    _pageController.nextPage(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOut,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,15 +67,26 @@ class HealthExDtlViewState extends ConsumerState<HealthExDtlView>{
           Column(
             crossAxisAlignment: .center,
             children: [
-              _dateSelector(exState, ref),
-              Gap(20.h),
-              _calenderSelector(exState, ref),
-              Gap(20.h),
-              _summaryArea(targetDailyData),
-              _exLstInfo(targetDailyData),
+              _dateSelector(exState, ref, _movePrevDay, _moveNextDay),
               Expanded(
-                child: _dateExLst(exState, context),
-              )
+                child: NestedScrollView(
+                  headerSliverBuilder: (context, innerBoxIsScrolled) {
+                    return [
+                      SliverToBoxAdapter(child: Gap(20.h)),
+                      SliverToBoxAdapter(child: _calenderSelector(exState, ref)),
+                      SliverToBoxAdapter(child: Gap(20.h)),
+                      SliverToBoxAdapter(child: _summaryArea(targetDailyData)),
+                      SliverPersistentHeader(
+                          pinned: true,
+                          delegate: _ExLstInfoHeaderDelegate(
+                            height: 53.h,
+                            child: _exLstInfo(targetDailyData)
+                      )),
+                    ];
+                  },
+                  body: _dateExLst(exState, context),
+                ),
+              ),
             ],
           ),
       ),
@@ -55,7 +94,7 @@ class HealthExDtlViewState extends ConsumerState<HealthExDtlView>{
   }
 
 
-  Widget _dateSelector(ExDtlState state, WidgetRef ref){
+  Widget _dateSelector(ExDtlState state, WidgetRef ref, Function() tapPrevious, Function() tapForward){
     return Container(
       padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
       height: 73.h,
@@ -64,27 +103,25 @@ class HealthExDtlViewState extends ConsumerState<HealthExDtlView>{
       child: Row(
         mainAxisAlignment: .spaceBetween,
         children: [
-          GestureDetector(
+          InkWell(
             child: SizedBox(
               height: 40.h,
               width: 26.w,
               child: Icon(Icons.arrow_back_ios_new_rounded),
             ),
-            onTap: (){
-              ref.read(exDtlViewModelProvider.notifier).selectDate(DateTime(state.selectedDate.year, state.selectedDate.month - 1));
-            },
+            onTap: tapPrevious
+            ,
           ),
 
-          Text('${state.selectedDate.year}년 ${state.selectedDate.month}월', style: HomeTheme.evaluationTextStyle,),
-          GestureDetector(
+          Text('${state.selectedDate.year}년 ${state.selectedDate.month}월', style: HomeTheme.evaluationTextStyle.copyWith(fontWeight: FontWeight.w700),),
+          InkWell(
             child: SizedBox(
               height: 40.h,
               width: 26.w,
               child: Icon(Icons.arrow_forward_ios_rounded),
             ),
-            onTap: (){
-              ref.read(exDtlViewModelProvider.notifier).selectDate(DateTime(state.selectedDate.year, state.selectedDate.month + 1));
-            },
+            onTap: tapForward
+            ,
           )
         ],
       ),
@@ -95,9 +132,27 @@ class HealthExDtlViewState extends ConsumerState<HealthExDtlView>{
     return SizedBox(
       height: 308.h,
       width: 375.w,
-      child: ExDtlCalendar(initialDate: state.selectedDate, onDateSelected: (selectedDate){
-        ref.read(exDtlViewModelProvider.notifier).selectDate(selectedDate);
-      }, exDatas: state.exDatas),
+      child: PageView.builder(
+        controller: _pageController,
+        onPageChanged: (page){
+          int diff = (page - _initialPage).sign;
+
+          int event = 0;
+          if (diff > 0) {
+            event = 1; // 앞으로 이동
+          } else if (diff < 0) {
+            event = -1; // 뒤로 이동
+          }
+
+          _initialPage = page;
+          ref.read(exDtlViewModelProvider.notifier).selectDate(DateTime(state.selectedDate.year, state.selectedDate.month + event));
+        },
+        itemBuilder: (context, idx) {
+          return ExDtlCalendar(initialDate: state.selectedDate, onDateSelected: (selectedDate){
+            ref.read(exDtlViewModelProvider.notifier).selectDate(selectedDate);
+          }, exDatas: state.exDatas);
+        }
+      ),
     );
   }
 
@@ -190,7 +245,9 @@ class HealthExDtlViewState extends ConsumerState<HealthExDtlView>{
                                       style: HomeTheme.titleTextStyle.copyWith(color: Colors.black)
                                   ),
                                   TextSpan(
-                                      text: '\n${dtlData.strtDt.hour}:${dtlData.strtDt.minute}~${endTime.hour}:${endTime.minute}',//parameter
+                                      text: '\n${
+                                          dtlData.strtDt.hour.toString().padLeft(2,'0')}:${dtlData.strtDt.minute.toString().padLeft(2,'0')}~'
+                                          '${endTime.hour.toString().padLeft(2,'0')}:${endTime.minute.toString().padLeft(2,'0')}',//parameter
                                       style: FeatureTheme.exExplainText.copyWith(color: Color(0xff6B7280))
                                   )
                                 ]
@@ -289,4 +346,38 @@ class HealthExDtlViewState extends ConsumerState<HealthExDtlView>{
 
 
 
+}
+
+
+class _ExLstInfoHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+  final double height;
+
+  _ExLstInfoHeaderDelegate({
+    required this.child,
+    required this.height,
+  });
+
+  @override
+  double get minExtent => height;
+
+  @override
+  double get maxExtent => height;
+
+  @override
+  Widget build(
+      BuildContext context,
+      double shrinkOffset,
+      bool overlapsContent,
+      ) {
+    return Container(
+      color: Colors.white,
+      child: child,
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _ExLstInfoHeaderDelegate oldDelegate) {
+    return oldDelegate.height != height || oldDelegate.child != child;
+  }
 }

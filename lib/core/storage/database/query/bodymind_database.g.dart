@@ -3520,6 +3520,31 @@ abstract class _$BodymindDatabase extends GeneratedDatabase {
     );
   }
 
+  Selectable<SelectFeatureExerciseForDateResult> selectFeatureExerciseForDate(
+    String stYmd,
+    String endYmd,
+  ) {
+    return customSelect(
+      'SELECT i.base_date, i.ex_sn, i.type, i.metric_kind, i.metric_val, i.distance, i.calorie, i.start_hhmm, i.end_hhmm, h.hr_lst, h.step_sec FROM tb_feature_exercise_info AS i JOIN tb_feature_exercise_hr AS h ON h.ex_sn = i.ex_sn WHERE i.base_date BETWEEN ?1 AND ?2 ORDER BY i.base_date, i.start_hhmm',
+      variables: [Variable<String>(stYmd), Variable<String>(endYmd)],
+      readsFrom: {tbFeatureExerciseInfo, tbFeatureExerciseHr},
+    ).map(
+      (QueryRow row) => SelectFeatureExerciseForDateResult(
+        baseDate: row.read<String>('base_date'),
+        exSn: row.read<int>('ex_sn'),
+        type: row.read<int>('type'),
+        metricKind: row.read<String>('metric_kind'),
+        metricVal: row.read<double>('metric_val'),
+        distance: row.read<double>('distance'),
+        calorie: row.read<double>('calorie'),
+        startHhmm: row.read<String>('start_hhmm'),
+        endHhmm: row.read<String>('end_hhmm'),
+        hrLst: row.read<String>('hr_lst'),
+        stepSec: row.read<int>('step_sec'),
+      ),
+    );
+  }
+
   Future<int> insertExerciseInfo(
     String baseDate,
     int type,
@@ -3632,6 +3657,46 @@ abstract class _$BodymindDatabase extends GeneratedDatabase {
       readsFrom: {tbFeatureSleepInfo, tbFeatureSleepDetail},
     ).map(
       (QueryRow row) => SelectFeatureSleepInfoResult(
+        baseDate: row.read<String>('base_date'),
+        totalM: row.readNullable<int>('total_m'),
+        awakeM: row.readNullable<int>('awake_m'),
+        lightM: row.readNullable<int>('light_m'),
+        remM: row.readNullable<int>('rem_m'),
+        deepM: row.readNullable<int>('deep_m'),
+        segmentCnt: row.read<int>('segment_cnt'),
+      ),
+    );
+  }
+
+  Selectable<SelectFeatureSleepSegmentaionForDateResult>
+  selectFeatureSleepSegmentaionForDate(String stYmd, String endYmd) {
+    return customSelect(
+      'SELECT i.base_date, i.start_at, i.end_at, d.stage, d.start_at AS seg_start, d.end_at AS seg_end, d.duration_m FROM tb_feature_sleep_info AS i JOIN tb_feature_sleep_detail AS d ON d.slp_sn = i.slp_sn WHERE i.base_date BETWEEN ?1 AND ?2 ORDER BY i.base_date, d.start_at',
+      variables: [Variable<String>(stYmd), Variable<String>(endYmd)],
+      readsFrom: {tbFeatureSleepInfo, tbFeatureSleepDetail},
+    ).map(
+      (QueryRow row) => SelectFeatureSleepSegmentaionForDateResult(
+        baseDate: row.read<String>('base_date'),
+        startAt: row.readNullable<String>('start_at'),
+        endAt: row.readNullable<String>('end_at'),
+        stage: row.read<String>('stage'),
+        segStart: row.read<String>('seg_start'),
+        segEnd: row.read<String>('seg_end'),
+        durationM: row.read<int>('duration_m'),
+      ),
+    );
+  }
+
+  Selectable<SelectFeatureSleepInfoForDateResult> selectFeatureSleepInfoForDate(
+    String stYmd,
+    String endYmd,
+  ) {
+    return customSelect(
+      'SELECT i.base_date, SUM(d.duration_m) AS total_m, SUM(CASE WHEN d.stage = \'AWAKE\' THEN d.duration_m ELSE 0 END) AS awake_m, SUM(CASE WHEN d.stage = \'LIGHT\' THEN d.duration_m ELSE 0 END) AS light_m, SUM(CASE WHEN d.stage = \'REM\' THEN d.duration_m ELSE 0 END) AS rem_m, SUM(CASE WHEN d.stage = \'DEEP\' THEN d.duration_m ELSE 0 END) AS deep_m, COUNT(*) AS segment_cnt FROM tb_feature_sleep_info AS i JOIN tb_feature_sleep_detail AS d ON d.slp_sn = i.slp_sn WHERE i.base_date BETWEEN ?1 AND ?2 GROUP BY i.base_date ORDER BY i.base_date',
+      variables: [Variable<String>(stYmd), Variable<String>(endYmd)],
+      readsFrom: {tbFeatureSleepInfo, tbFeatureSleepDetail},
+    ).map(
+      (QueryRow row) => SelectFeatureSleepInfoForDateResult(
         baseDate: row.read<String>('base_date'),
         totalM: row.readNullable<int>('total_m'),
         awakeM: row.readNullable<int>('awake_m'),
@@ -5588,6 +5653,33 @@ class SelectFeatureExerciseResult {
   });
 }
 
+class SelectFeatureExerciseForDateResult {
+  final String baseDate;
+  final int exSn;
+  final int type;
+  final String metricKind;
+  final double metricVal;
+  final double distance;
+  final double calorie;
+  final String startHhmm;
+  final String endHhmm;
+  final String hrLst;
+  final int stepSec;
+  SelectFeatureExerciseForDateResult({
+    required this.baseDate,
+    required this.exSn,
+    required this.type,
+    required this.metricKind,
+    required this.metricVal,
+    required this.distance,
+    required this.calorie,
+    required this.startHhmm,
+    required this.endHhmm,
+    required this.hrLst,
+    required this.stepSec,
+  });
+}
+
 class SelectFeatureSleepSegmentaionResult {
   final String baseDate;
   final String? startAt;
@@ -5616,6 +5708,44 @@ class SelectFeatureSleepInfoResult {
   final int? deepM;
   final int segmentCnt;
   SelectFeatureSleepInfoResult({
+    required this.baseDate,
+    this.totalM,
+    this.awakeM,
+    this.lightM,
+    this.remM,
+    this.deepM,
+    required this.segmentCnt,
+  });
+}
+
+class SelectFeatureSleepSegmentaionForDateResult {
+  final String baseDate;
+  final String? startAt;
+  final String? endAt;
+  final String stage;
+  final String segStart;
+  final String segEnd;
+  final int durationM;
+  SelectFeatureSleepSegmentaionForDateResult({
+    required this.baseDate,
+    this.startAt,
+    this.endAt,
+    required this.stage,
+    required this.segStart,
+    required this.segEnd,
+    required this.durationM,
+  });
+}
+
+class SelectFeatureSleepInfoForDateResult {
+  final String baseDate;
+  final int? totalM;
+  final int? awakeM;
+  final int? lightM;
+  final int? remM;
+  final int? deepM;
+  final int segmentCnt;
+  SelectFeatureSleepInfoForDateResult({
     required this.baseDate,
     this.totalM,
     this.awakeM,

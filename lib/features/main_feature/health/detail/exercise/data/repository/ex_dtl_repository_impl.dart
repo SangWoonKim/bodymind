@@ -18,10 +18,10 @@ class ExDtlRepositoryImpl extends ExDtlRepository{
 
   @override
   Future<List<FeatureModel>?> loadDbExDataForDate(String stYmd, String endYmd) async{
-    List<SelectFeatureExerciseResult> result = await db.selectFeatureExercise().get();
+    List<SelectFeatureExerciseForDateResult> result = await db.selectFeatureExerciseForDate(stYmd, endYmd).get();
 
     if(result.isEmpty) return null;
-    Map<String, List<SelectFeatureExerciseResult>> groupedData = groupBy(result, (e) =>e.baseDate);
+    Map<String, List<SelectFeatureExerciseForDateResult>> groupedData = groupBy(result, (e) =>e.baseDate);
     List<FeatureModel> returnResult = List.empty(growable: true);
 
     groupedData.forEach((baseDate, dailyData) {

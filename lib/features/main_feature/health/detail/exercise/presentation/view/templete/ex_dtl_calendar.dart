@@ -189,7 +189,7 @@ class ExDtlCalendarState extends State<ExDtlCalendar>{
                   child: Container(
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? Color(0xffebf2fe)
+                          ? Color(0xff3b82f6)
                           : isToday
                           ? Colors.grey.shade200
                           : Colors.transparent,
@@ -210,7 +210,7 @@ class ExDtlCalendarState extends State<ExDtlCalendar>{
                                 style: TextStyle(
                                   fontSize: 15.sp,
                                   fontWeight: isSelected || isToday
-                                      ? FontWeight.w700
+                                      ? FontWeight.w500
                                       : FontWeight.w500,
                                   color: isSelected ? Colors.white : textColor,
                                 ),
@@ -253,10 +253,7 @@ class ExDtlCalendarState extends State<ExDtlCalendar>{
               width: 4.w,
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(100),
-                  color: Color(0xffDBEAFE)
-              ),
-              child: Center(
-                child: SvgPicture.asset('assets/images/icon/runner.svg',colorFilter: ColorFilter.mode(Color(0xff2563eb), BlendMode.srcIn),),
+                  color: Color(0xff2563eb)
               ),
             ));
             break;
@@ -267,10 +264,7 @@ class ExDtlCalendarState extends State<ExDtlCalendar>{
               width: 4.w,
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(100),
-                  color: Color(0xffDBEAFE)
-              ),
-              child: Center(
-                child: SvgPicture.asset('assets/images/icon/ex/cycle.svg',colorFilter: ColorFilter.mode(Color(0xff2563eb), BlendMode.srcIn),),
+                  color: Color(0xff2563eb)
               ),
             ));
             break;
@@ -281,10 +275,7 @@ class ExDtlCalendarState extends State<ExDtlCalendar>{
               width: 4.w,
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(100),
-                  color: Color(0xffDBEAFE)
-              ),
-              child: Center(
-                child: SvgPicture.asset('assets/images/icon/ex/strength.svg',colorFilter: ColorFilter.mode(Color(0xff2563eb), BlendMode.srcIn),),
+                  color: Color(0xffdcfce7)
               ),
             ));
             break;
@@ -295,10 +286,7 @@ class ExDtlCalendarState extends State<ExDtlCalendar>{
               width: 4.w,
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(100),
-                  color: Color(0xffDBEAFE)
-              ),
-              child: Center(
-                child: SvgPicture.asset('assets/images/icon/ex/swim.svg',colorFilter: ColorFilter.mode(Color(0xff2563eb), BlendMode.srcIn),),
+                  color: Color(0xfff97316)
               ),
             ));
             break;
@@ -311,7 +299,7 @@ class ExDtlCalendarState extends State<ExDtlCalendar>{
                   color: Color(0xffDBEAFE)
               ),
               child: Center(
-                child: SvgPicture.asset('assets/images/icon/ex/swim.svg',colorFilter: ColorFilter.mode(Color(0xff2563eb), BlendMode.srcIn),),
+                child: SvgPicture.asset('assets/images/icon/ex/swim.svg',colorFilter: ColorFilter.mode(Color(0xffef4444), BlendMode.srcIn),),
               ),
             ));
             break;
