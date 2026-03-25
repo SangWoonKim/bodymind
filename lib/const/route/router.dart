@@ -3,6 +3,7 @@ import 'package:bodymind/features/main_feature/health/detail/exercise/domain/ent
 import 'package:bodymind/features/main_feature/health/detail/exercise/presentation/view/element/ex_element_view.dart';
 import 'package:bodymind/features/main_feature/health/detail/exercise/presentation/view/health_ex_dtl_view.dart';
 import 'package:bodymind/features/main_feature/health/detail/heartrate/presentation/view/health_dtl_heart_view.dart';
+import 'package:bodymind/features/main_feature/health/detail/sleep/presentation/view/health_dtl_sleep_view.dart';
 import 'package:bodymind/features/main_feature/main_feature_nav/bottom_navigation_view.dart';
 import 'package:bodymind/features/splash/presentation/provider/splash_provider.dart';
 import 'package:bodymind/features/splash/presentation/view/splash_view.dart';
@@ -92,6 +93,13 @@ final routeProvider = Provider<GoRouter>((ref){
               }
             )
           ]
+        ),
+        GoRoute(
+            path: '/feature/Sleep',
+            name: 'featureSleep',
+            builder: (ctx, state){
+              return HealthDtlSleepView();
+            }
         ),
         //bottomNavigationView 하위 위젯 정의
         StatefulShellRoute.indexedStack(

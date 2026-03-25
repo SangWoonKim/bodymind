@@ -39,6 +39,8 @@ enum SleepRecoveryGrade {
   veryPoor,
 }
 
+
+
 class SleepThreshold {
   // 수면 시간 기준 (분)
   static const int veryShortMax = 300;      // < 300
@@ -141,7 +143,7 @@ class SleepEvaluator {
   SleepAnalysis evaluate(SleepInput input) {
     final invalidReason = _validate(input);
     if (invalidReason != null) {
-      return SleepAnalysis.invalid(invalidReason);
+      return SleepAnalysis.invalid();
     }
 
     final derived = _calculateRatio(input);
@@ -171,8 +173,11 @@ class SleepEvaluator {
 
     return SleepAnalysis(
       durationMessage,
+      EvaluateGrade.info,
       structureMessage,
+      EvaluateGrade.convertTimeGrade(durationGrade),
       recoveryMessage,
+      EvaluateGrade.convertCareGrade(recoveryGrade)
     );
   }
 

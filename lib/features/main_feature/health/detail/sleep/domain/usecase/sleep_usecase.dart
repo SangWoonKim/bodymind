@@ -49,6 +49,9 @@ class SleepUsecase {
               SleepSummary(
                 sleepData.totalDuration,
                 sleepData.totalDeepDuration,
+                sleepData.totalAwakeDuration,
+                sleepData.totalRemDuration,
+                sleepData.totalLightDuration,
                 sleepData.sleepScore,
                 recognizedSleep,
               ),

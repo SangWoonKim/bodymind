@@ -216,5 +216,13 @@ class TimeUtil {
     );
   }
 
+  static String durationToTmStr(int durationMin){
+    int hour = (durationMin / 60).floor();
+    int min = durationMin % 60;
+
+    return hour == 0
+        ? '${min} 분' : min == 0
+        ? '${hour} 시간' : '${hour} 시간 ${min} 분';
+  }
 
 }

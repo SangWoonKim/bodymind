@@ -1,5 +1,8 @@
+import 'package:bodymind/core/util/bodymind_core_util.dart';
 import 'package:bodymind/core/widget/cus_appbar.dart';
+import 'package:bodymind/features/main_feature/health/detail/sleep/domain/entity/sleep_summary.dart';
 import 'package:bodymind/features/main_feature/health/detail/sleep/presentation/provider/sleep_dtl_provider.dart';
+import 'package:bodymind/features/main_feature/health/detail/sleep/presentation/view/templete/sleep_stage_graph.dart';
 import 'package:bodymind/features/main_feature/health/detail/util/feature_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,19 +11,48 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gap/gap.dart';
 import 'package:path/path.dart';
 
+import '../../../../../../common_util/action_calendar.dart';
 import '../../../../../home/presentation/theme/home_theme.dart';
+import '../../domain/entity/sleep_analysis.dart';
 import '../viewmodel/sleep_dtl_viewmodel.dart';
 
-class SleepDtlView extends ConsumerStatefulWidget{
-  const SleepDtlView({super.key});
-
+class HealthDtlSleepView extends ConsumerStatefulWidget{
+  const HealthDtlSleepView({super.key});
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => SleepDtlViewState();
-
-
+  ConsumerState<ConsumerStatefulWidget> createState() => HealthDtlSleepViewState();
 }
 
-class SleepDtlViewState extends ConsumerState<SleepDtlView>{
+
+class HealthDtlSleepViewState extends ConsumerState<HealthDtlSleepView>{
+  int _initialPage = 10000;
+  late final PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: _initialPage);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _tapPrevious() {
+    _pageController.previousPage(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOut,
+    );
+  }
+
+  void _tapForward() {
+    _pageController.nextPage(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOut,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(sleepDtlViewModelProvider);
@@ -28,20 +60,50 @@ class SleepDtlViewState extends ConsumerState<SleepDtlView>{
       child: Scaffold(
         appBar: CustomAppBar(
           title: '수면',
+          actions: [
+            InkWell(
+              child: Icon(Icons.calendar_month,),
+              onTap: (){
+                final selectedDate = state.selectedDate;
+                ActionCalendar().openActionCalendar(context: context, initialDate: selectedDate, onSelected: (date) {
+                  bool isMoveMonth = date.month != state.selectedDate.month;
+                  bool isMoveYear = date.year != state.selectedDate.year;
+                    ref.read(sleepDtlViewModelProvider.notifier).selectedDate(isMoveMonth: isMoveMonth || isMoveYear, selectedDate: date);
+                });
+              },
+            )
+          ],
         ),
         body: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: .center,
             children: [
-              _dateSelector(state, ref, tapPrevious, tapForward),
+              _dateSelector(state, ref, _tapPrevious, _tapForward),
               Gap(20.h),
-              _summaryTile(state),
-              Gap(20.h),
-              _sleepGraphContainer(state),
-              Gap(20.h),
-              _stageSummaryContainer(state),
-              Gap(20.h),
-              _sleepAnalysisContainer(state)
+              Expanded(child: PageView.builder(
+                itemBuilder: (ctx,idx){
+                  _infoContainer(state);
+                },
+                controller: _pageController,
+                onPageChanged: (page){
+                  int diff =(page - _initialPage).sign;
+
+                  if(diff == 0) return;
+
+                  _initialPage = page;
+
+                  final viewModel = ref.read(sleepDtlViewModelProvider.notifier);
+
+                  final moveDay = state.selectedDate.add(Duration(days: diff));
+
+                  if(state.selectedDate.month != moveDay.month){
+                    viewModel.selectedDate(isMoveMonth: true, selectedDate: moveDay);
+                  }else{
+                    viewModel.selectedDate(isMoveMonth: false, selectedDate: moveDay);
+                  }
+
+                },)
+              )
             ],
           ),
         ),
@@ -49,6 +111,19 @@ class SleepDtlViewState extends ConsumerState<SleepDtlView>{
     );
   }
 
+  Widget _infoContainer(SleepDtlState state){
+    return Column(
+      children: [
+        _summaryTile(state.summary),
+        Gap(20.h),
+        _sleepGraphContainer(state),
+        Gap(20.h),
+        _stageSummaryContainer(state.summary),
+        Gap(20.h),
+        _sleepAnalysisContainer(state.analysis)
+      ],
+    );
+  }
 
   Widget _dateSelector(SleepDtlState state, WidgetRef ref, Function() tapPrevious, Function() tapForward){
     return Container(
@@ -72,7 +147,7 @@ class SleepDtlViewState extends ConsumerState<SleepDtlView>{
           RichText(
             text: TextSpan(
               children:[
-                TextSpan(text:'${state.selectedDate?.year}년 ${state.selectedDate.month}월 ${state.selectedDate.day.toString().padLeft(2,'0')}',
+                TextSpan(text:'${state.selectedDate.year}년 ${state.selectedDate.month}월 ${state.selectedDate.day.toString().padLeft(2,'0')}',
                     style: FeatureTheme.hrMdText.copyWith(color: Colors.black)
                 ),
                 TextSpan(text:'${state.selectedDate.weekday}',
@@ -96,7 +171,11 @@ class SleepDtlViewState extends ConsumerState<SleepDtlView>{
     );
   }
 
-  Widget _summaryTile(SleepDtlState state, ){
+  Widget _summaryTile(SleepSummary? summary){
+    final totalDuration = summary?.totalDuration == null ? '0분' : TimeUtil.durationToTmStr(summary!.totalDuration);
+    final totalRecognized = summary?.sleepRecognized == null ? '0분' : TimeUtil.durationToTmStr(summary!.sleepRecognized);
+    final totalDeepDuration = summary?.deepDuration == null ? '0분' : TimeUtil.durationToTmStr(summary!.deepDuration);
+
     return Container(
       width: 343.w,
       height: 196.h,
@@ -106,15 +185,15 @@ class SleepDtlViewState extends ConsumerState<SleepDtlView>{
           Row(
             mainAxisAlignment: .spaceBetween,
             children: [
-              _summaryContainer(state, typeColor, '총 수면 시간', bodyStr),
-              _summaryContainer(state, typeColor, '갚은 수면 시간', bodyStr)
+              _summaryContainer(Color(0xff3B82F6), '총 수면 시간', totalDuration),
+              _summaryContainer(Color(0xffA855F7), '갚은 수면 시간', totalDeepDuration)
             ],
           ),
           Row(
             mainAxisAlignment: .spaceBetween,
             children: [
-              _summaryContainer(state, typeColor, '수면 점수', '${state.summary?.todayScore ?? 0} 점'),
-              _summaryContainer(state, typeColor, '실제 수면 시간', '${state.summary.sleepRecognized}')
+              _summaryContainer(Color(0xff93c5fd), '수면 점수', '${summary?.todayScore ?? 0} 점'),
+              _summaryContainer(Color(0xff009FFB), '실제 수면 시간', totalRecognized)
             ],
           )
         ],
@@ -122,7 +201,7 @@ class SleepDtlViewState extends ConsumerState<SleepDtlView>{
     );
   }
 
-  Widget _summaryContainer(SleepDtlState state, Color typeColor, String title, String bodyStr){
+  Widget _summaryContainer(Color typeColor, String title, String bodyStr){
     return Container(
       height: 92.h,
       width: 166.w,
@@ -164,14 +243,14 @@ class SleepDtlViewState extends ConsumerState<SleepDtlView>{
           SizedBox(
             height: 260.h,
             width: 309.w,
-            child: ,
+            child: SleepStageGraph(stages: state.stages, startTime: state.startDate),
           )
         ]
       ),
     );
   }
 
-  Widget _stageSummaryContainer(SleepDtlState state){
+  Widget _stageSummaryContainer(SleepSummary? summary){
     return Container(
       height: 222.h,
       width: 343.w,
@@ -187,10 +266,10 @@ class SleepDtlViewState extends ConsumerState<SleepDtlView>{
             child: Column(
               mainAxisAlignment: .spaceBetween,
               children: [
-                _stageInfo(state, typeColor, title, timeStr),
-                _stageInfo(state, typeColor, title, timeStr),
-                _stageInfo(state, typeColor, title, timeStr),
-                _stageInfo(state, typeColor, title, timeStr),
+                _stageInfo(Color(0xffF87171), '깨어있음', TimeUtil.durationToTmStr(summary?.awakeDuration ?? 0)),
+                _stageInfo(Color(0xffFACC15), '얕은 수면', TimeUtil.durationToTmStr(summary?.lightDuration ?? 0)),
+                _stageInfo(Color(0xffA855F7), '깊은 수면', TimeUtil.durationToTmStr(summary?.deepDuration ?? 0)),
+                _stageInfo(Color(0xff22C55E), '렘수면', TimeUtil.durationToTmStr(summary?.remDuration ?? 0)),
               ],
             ),
           )
@@ -199,7 +278,7 @@ class SleepDtlViewState extends ConsumerState<SleepDtlView>{
     );
   }
 
-  Widget _stageInfo(SleepDtlState state, Color typeColor, String title, String timeStr){
+  Widget _stageInfo(Color typeColor, String title, String timeStr){
     return Container(
       width: 309.w,
       height: 24.h,
@@ -227,7 +306,7 @@ class SleepDtlViewState extends ConsumerState<SleepDtlView>{
     );
   }
 
-  Widget _sleepAnalysisContainer(SleepDtlState state){
+  Widget _sleepAnalysisContainer(SleepAnalysis analysis){
     return Container(
       width: 343.w,
       height: 266.h,
@@ -243,9 +322,9 @@ class SleepDtlViewState extends ConsumerState<SleepDtlView>{
             child: Column(
               mainAxisAlignment: .spaceBetween,
               children: [
-                _sleepAnalysisItem(iconPath, body, backgroundColor),
-                _sleepAnalysisItem(iconPath, body, backgroundColor),
-                _sleepAnalysisItem(iconPath, body, backgroundColor),
+                _sleepAnalysisItem(analysis.sleepTimeGrade.iconPath, analysis.sleepTimeAnalysis, analysis.sleepTimeGrade.backGroundColor),
+                _sleepAnalysisItem(analysis.sleepRatioGrade.iconPath, analysis.sleepRatioAnalysis, analysis.sleepTimeGrade.backGroundColor),
+                _sleepAnalysisItem(analysis.sleepCareGrade.iconPath, analysis.sleepCareAnalysis, analysis.sleepTimeGrade.backGroundColor),
               ],
             ),
           )

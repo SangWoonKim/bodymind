@@ -16,4 +16,4 @@ final sleepDtlUsecaseProvider = Provider<SleepUsecase>((ref){
   return SleepUsecase(repo);
 });
 
-final sleepDtlViewModelProvider = AutoDisposeNotifierProvider<SleepDtlViewmodel, SleepDtlViewState>(SleepDtlViewmodel.new);
+final sleepDtlViewModelProvider = AutoDisposeNotifierProvider<SleepDtlViewmodel, SleepDtlState>(SleepDtlViewmodel.new);
