@@ -17,7 +17,7 @@ class SleepStageGraph extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
 
-    if(stages == null){
+    if(stages == null || stages!.isEmpty){
       return const Center(child: Text('수면 데이터가 없습니다'));
     }
 
@@ -30,6 +30,9 @@ class SleepStageGraph extends StatelessWidget{
         FlSpot(runningTime.toDouble(), e.stage.value.toDouble()),
       );
       runningTime += e.durationMin;
+      markerSpots.add(
+        FlSpot(runningTime.toDouble(), e.stage.value.toDouble()),
+      );
     }
 
     final totalMins = runningTime;
@@ -68,7 +71,16 @@ class SleepStageGraph extends StatelessWidget{
               reservedSize: 36,
               interval: 1,
               getTitlesWidget: (value, meta) {
-                return Text(value.toInt().toString());
+                if(value == 0) {
+                  return Text('깨어있음');
+                } else if(value == 0) {
+                  return Text('얕은 수면');
+                } else if(value == 0) {
+                  return Text('렘수면');
+                } else {
+                  return Text('깊은 수면');
+                }
+
               },
             ),
           ),

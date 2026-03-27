@@ -95,7 +95,7 @@ final routeProvider = Provider<GoRouter>((ref){
           ]
         ),
         GoRoute(
-            path: '/feature/Sleep',
+            path: '/feature/sleep',
             name: 'featureSleep',
             builder: (ctx, state){
               return HealthDtlSleepView();

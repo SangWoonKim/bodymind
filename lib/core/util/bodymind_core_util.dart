@@ -225,4 +225,22 @@ class TimeUtil {
         ? '${hour} 시간' : '${hour} 시간 ${min} 분';
   }
 
+  static String weekDayToString(int weekDay){
+    if(weekDay == 1){
+      return '월요일';
+    } else if(weekDay == 2){
+      return '화요일';
+    } else if(weekDay == 3){
+      return '수요일';
+    } else if(weekDay == 4){
+      return '목요일';
+    } else if(weekDay == 5){
+      return '금요일';
+    } else if(weekDay == 6){
+      return '토요일';
+    } else if(weekDay == 7){
+      return '일요일';
+    }
+    return '알 수 없음';
+  }
 }

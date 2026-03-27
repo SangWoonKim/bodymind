@@ -9,7 +9,7 @@ class HomeSleepInjector {
       x < lo ? lo : (x > hi ? hi : x);
   double clamp01(double x) => clamp(x, 0, 1);
 
-  int _sleepScore({
+  int calSleepScore({
     required int lightMin,
     required int remMin,
     required int deepMin,
@@ -67,7 +67,7 @@ class HomeSleepInjector {
       if(sleepData != null){
 
         String day = sleepModel!.instDt.substring(6,8);
-        final sleepScore = _sleepScore(
+        final sleepScore = calSleepScore(
             lightMin: sleepData.totalLightM,
             remMin: sleepData.totalRemM,
             deepMin: sleepData.totalDeepM,
@@ -77,17 +77,12 @@ class HomeSleepInjector {
 
         if(int.parse(day) == now.day){
           currentScore = sleepScore;
-        }else if(int.parse(day) == previousDay.day){
-          currentScore = sleepScore;
         }
         weeklyScore += sleepScore;
       }
 
     });
 
-    FeatureInfo feature = state.featureInfo['sleep']!.copyWith(
-        score: currentScore
-    );
 
     return Fourth(
         currentScore.round(),

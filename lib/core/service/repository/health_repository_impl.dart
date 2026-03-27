@@ -128,7 +128,8 @@ class HealthRepositoryImpl extends HealthRepository{
     if(data.data != null){
       final sleepModel = data.data!.where((e) => e.data != null).toList();
       List<FeatureModel> returnData = List.empty(growable: true);
-      sleepModel.map((e){
+
+      for(BaseModel e in sleepModel){
         final sleepInfo = e.data as SleepModel?;
 
         if(sleepInfo != null){
@@ -152,7 +153,7 @@ class HealthRepositoryImpl extends HealthRepository{
             ),
           )) ;
         }
-      });
+      }
 
       return returnData.isEmpty ? null : returnData;
     }
