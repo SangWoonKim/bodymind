@@ -13,13 +13,13 @@ class SleepAnalysisInjector {
     final evaluator = SleepEvaluator();
 
     return evaluator.evaluate(
-      const SleepInput(
-        totalInBedMinutes: 480,
-        totalSleepMinutes: 430,
-        totalAwakeMinutes: 35,
-        totalLightMinutes: 250,
-        totalDeepMinutes: 85,
-        totalRemMinutes: 95,
+      SleepInput(
+        totalInBedMinutes: totalInBedMinutes,
+        totalSleepMinutes: totalSleepMinutes,
+        totalAwakeMinutes: totalAwakeMinutes,
+        totalLightMinutes: totalLightMinutes,
+        totalDeepMinutes: totalDeepMinutes,
+        totalRemMinutes: totalRemMinutes,
       ),
     );
   }

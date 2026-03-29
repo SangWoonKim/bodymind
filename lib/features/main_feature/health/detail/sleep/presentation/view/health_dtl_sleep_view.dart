@@ -456,12 +456,12 @@ class HealthDtlSleepViewState extends ConsumerState<HealthDtlSleepView> {
                 _sleepAnalysisItem(
                   analysis.sleepRatioGrade.iconPath,
                   analysis.sleepRatioAnalysis,
-                  analysis.sleepTimeGrade.backGroundColor,
+                  analysis.sleepRatioGrade.backGroundColor,
                 ),
                 _sleepAnalysisItem(
                   analysis.sleepCareGrade.iconPath,
                   analysis.sleepCareAnalysis,
-                  analysis.sleepTimeGrade.backGroundColor,
+                  analysis.sleepCareGrade.backGroundColor,
                 ),
               ],
             ),
@@ -483,10 +483,12 @@ class HealthDtlSleepViewState extends ConsumerState<HealthDtlSleepView> {
         borderRadius: BorderRadius.circular(8),
         color: backgroundColor,
       ),
+      padding: EdgeInsets.symmetric(horizontal: 8.w),
       child: Row(
         crossAxisAlignment: .center,
         children: [
           SvgPicture.asset(iconPath),
+          Gap(8.w),
           Text(
             body,
             style: FeatureTheme.exExplainText.copyWith(

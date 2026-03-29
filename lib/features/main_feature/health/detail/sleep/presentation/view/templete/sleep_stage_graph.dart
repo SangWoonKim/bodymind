@@ -87,7 +87,7 @@ class SleepStageGraph extends StatelessWidget{
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              interval: 30,
+              interval: 60,
               getTitlesWidget: (value, meta) {
                 final min = value.toInt();
                 final time = startTime!.add(Duration(minutes: min));

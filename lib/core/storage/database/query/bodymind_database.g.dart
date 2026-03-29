@@ -3652,7 +3652,7 @@ abstract class _$BodymindDatabase extends GeneratedDatabase {
 
   Selectable<SelectFeatureSleepInfoResult> selectFeatureSleepInfo() {
     return customSelect(
-      'SELECT i.base_date, SUM(d.duration_m) AS total_m, SUM(CASE WHEN d.stage = \'AWAKE\' THEN d.duration_m ELSE 0 END) AS awake_m, SUM(CASE WHEN d.stage = \'LIGHT\' THEN d.duration_m ELSE 0 END) AS light_m, SUM(CASE WHEN d.stage = \'REM\' THEN d.duration_m ELSE 0 END) AS rem_m, SUM(CASE WHEN d.stage = \'DEEP\' THEN d.duration_m ELSE 0 END) AS deep_m, COUNT(*) AS segment_cnt FROM tb_feature_sleep_info AS i JOIN tb_feature_sleep_detail AS d ON d.slp_sn = i.slp_sn WHERE i.base_date BETWEEN strftime(\'%Y%m%d\', \'now\', \'localtime\', \'-6 day\') AND strftime(\'%Y%m%d\', \'now\', \'localtime\') GROUP BY i.base_date ORDER BY i.base_date',
+      'SELECT i.base_date, SUM(d.duration_m) AS total_m, SUM(CASE WHEN d.stage = \'A\' THEN d.duration_m ELSE 0 END) AS awake_m, SUM(CASE WHEN d.stage = \'L\' THEN d.duration_m ELSE 0 END) AS light_m, SUM(CASE WHEN d.stage = \'R\' THEN d.duration_m ELSE 0 END) AS rem_m, SUM(CASE WHEN d.stage = \'D\' THEN d.duration_m ELSE 0 END) AS deep_m, COUNT(*) AS segment_cnt FROM tb_feature_sleep_info AS i JOIN tb_feature_sleep_detail AS d ON d.slp_sn = i.slp_sn WHERE i.base_date BETWEEN strftime(\'%Y%m%d\', \'now\', \'localtime\', \'-6 day\') AND strftime(\'%Y%m%d\', \'now\', \'localtime\') GROUP BY i.base_date ORDER BY i.base_date',
       variables: [],
       readsFrom: {tbFeatureSleepInfo, tbFeatureSleepDetail},
     ).map(
@@ -3692,7 +3692,7 @@ abstract class _$BodymindDatabase extends GeneratedDatabase {
     String endYmd,
   ) {
     return customSelect(
-      'SELECT i.base_date, SUM(d.duration_m) AS total_m, SUM(CASE WHEN d.stage = \'AWAKE\' THEN d.duration_m ELSE 0 END) AS awake_m, SUM(CASE WHEN d.stage = \'LIGHT\' THEN d.duration_m ELSE 0 END) AS light_m, SUM(CASE WHEN d.stage = \'REM\' THEN d.duration_m ELSE 0 END) AS rem_m, SUM(CASE WHEN d.stage = \'DEEP\' THEN d.duration_m ELSE 0 END) AS deep_m, COUNT(*) AS segment_cnt FROM tb_feature_sleep_info AS i JOIN tb_feature_sleep_detail AS d ON d.slp_sn = i.slp_sn WHERE i.base_date BETWEEN ?1 AND ?2 GROUP BY i.base_date ORDER BY i.base_date',
+      'SELECT i.base_date, SUM(d.duration_m) AS total_m, SUM(CASE WHEN d.stage = \'A\' THEN d.duration_m ELSE 0 END) AS awake_m, SUM(CASE WHEN d.stage = \'L\' THEN d.duration_m ELSE 0 END) AS light_m, SUM(CASE WHEN d.stage = \'R\' THEN d.duration_m ELSE 0 END) AS rem_m, SUM(CASE WHEN d.stage = \'D\' THEN d.duration_m ELSE 0 END) AS deep_m, COUNT(*) AS segment_cnt FROM tb_feature_sleep_info AS i JOIN tb_feature_sleep_detail AS d ON d.slp_sn = i.slp_sn WHERE i.base_date BETWEEN ?1 AND ?2 GROUP BY i.base_date ORDER BY i.base_date',
       variables: [Variable<String>(stYmd), Variable<String>(endYmd)],
       readsFrom: {tbFeatureSleepInfo, tbFeatureSleepDetail},
     ).map(

@@ -190,7 +190,7 @@ class SleepEvaluator {
       return '총 수면 시간이 0 이하입니다.';
     }
 
-    if (input.totalSleepMinutes > input.totalInBedMinutes) {
+    if (input.totalSleepMinutes < input.totalInBedMinutes) {
       return '총 수면 시간이 총 누운 시간보다 큽니다.';
     }
 
@@ -199,17 +199,6 @@ class SleepEvaluator {
         input.totalDeepMinutes < 0 ||
         input.totalRemMinutes < 0) {
       return '수면 세부 값에 음수가 포함되어 있습니다.';
-    }
-
-    final stageSum = input.totalLightMinutes +
-        input.totalDeepMinutes +
-        input.totalRemMinutes;
-
-    // 플랫폼별 오차를 조금 허용
-    const int tolerance = 30;
-
-    if (stageSum > input.totalSleepMinutes + tolerance) {
-      return '수면 단계 합이 총 수면 시간을 크게 초과합니다.';
     }
 
     return null;

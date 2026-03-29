@@ -17,4 +17,20 @@ enum SleepType{
   static SleepType convertStr(String sleepType){
     return SleepType.values.firstWhere((e) => sleepType == e.typeStr);
   }
+
+  static String convertOrigin(int sleepEnumVal){
+    if(sleepEnumVal == 1){
+      return 'A';
+    } else if(sleepEnumVal == 2){
+      return 'A';
+    } else if(sleepEnumVal == 3){
+      return 'L';
+    }else if(sleepEnumVal == 4){
+      return 'D';
+    }else if(sleepEnumVal == 5){
+      return 'R';
+    }else{
+      return 'A';
+    }
+  }
 }

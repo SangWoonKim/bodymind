@@ -1,3 +1,4 @@
+import 'package:bodymind/features/main_feature/health/detail/sleep/domain/entity/sleep_type.dart';
 import 'package:common_mutiple_health/entity/const/data_catalog.dart';
 import 'package:common_mutiple_health/entity/const/permission_option.dart';
 import 'package:common_mutiple_health/entity/model/base/base_dynamic_model.dart';
@@ -139,7 +140,7 @@ class HealthRepositoryImpl extends HealthRepository{
                 TimeUtil.dateTimeToFullDt(DateTime.fromMillisecondsSinceEpoch(sleepInfo.detailData.first.sleepStartTime)) ,
                 TimeUtil.dateTimeToFullDt(DateTime.fromMillisecondsSinceEpoch(sleepInfo.detailData.last.sleepEndTime)) ,
                 sleepInfo.detailData.map((element) => FeatureSleepDtl(
-                    'A',
+                    SleepType.convertOrigin(element.sleepType),
                     TimeUtil.dateTimeToFullDt(DateTime.fromMillisecondsSinceEpoch(element.sleepStartTime)),
                     TimeUtil.dateTimeToFullDt(DateTime.fromMillisecondsSinceEpoch(element.sleepEndTime)),
                     element.sleepDuration)

@@ -31,12 +31,12 @@ class HomeSleepInjector {
     final sDur = clamp01(totalSleepMin / totalTargetMin);
 
     // 2) 전체 수면 퀄리티 비율 산출(중간에 깬시간이 많으면 더 적어짐)
-    final awakeRatio = awakeMin / totalInBed;
+    final awakeRatio = (awakeMin / totalInBed).isNaN ? 0 : (awakeMin / totalInBed);
     final sQual = 1.0 - clamp01(awakeRatio / awakeRatioBad);
 
     // 3) 수면 유형별 비율 산출
-    final deepRatio = deepMin / totalSleepMin;
-    final remRatio = remMin / totalSleepMin;
+    final deepRatio = (deepMin / totalSleepMin).isNaN ? 0 : (deepMin / totalSleepMin);
+    final remRatio = (remMin / totalSleepMin).isNaN ? 0 :(remMin / totalSleepMin);
 
     //deep 수면 비율에 점수 가중치 주입
     final sDeepAbs = clamp01(deepMin / deepAbsTargetMin);
